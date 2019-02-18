@@ -33,7 +33,8 @@ if(dir.exists(path.output)==FALSE){
 ## * libraries
 library(lava)
 library(data.table)
-devtools::load_all("lavaSearch2")
+## devtools::load_all("lavaSearch2")
+library(lavaSearch2)
 
 ## * settings
 seqN <- c(20,30,50,75,100,150,200,300,500)
@@ -90,3 +91,64 @@ out <- calibrateType1(m.fit, true.coef = true.coef,
 
 ## * display
 print(sessionInfo())
+
+## * running time
+if(FALSE){
+
+    ls.data <- lapply(seqN, function(iN){lava::sim(m.generative, n = iN, latent = FALSE)})
+    names(ls.data) <- seqN
+    ls.lvmfit <- lapply(ls.data, function(iData){lava::estimate(m.fit, data = iData)})
+    names(ls.lvmfit) <- seqN
+
+    ## algo 2
+    speedMM <- microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]]),
+                                              "30" = sCorrect(ls.lvmfit[["30"]]),
+                                              "50" = sCorrect(ls.lvmfit[["50"]]),
+                                              "75" = sCorrect(ls.lvmfit[["75"]]),
+                                              "100" = sCorrect(ls.lvmfit[["100"]]),
+                                              "150" = sCorrect(ls.lvmfit[["150"]]),
+                                              "200" = sCorrect(ls.lvmfit[["200"]]),
+                                              "300" = sCorrect(ls.lvmfit[["300"]]),
+                                              "500" = sCorrect(ls.lvmfit[["500"]]),
+                                              times = 50
+                                              )
+    saveRDS(speedMM, file = file.path("Results","speed-Algo2-MM.rds"))
+    ##  Unit: milliseconds
+    ## expr       min        lq      mean    median        uq       max neval     cld
+    ##   20  69.39570  69.81790  77.56782  70.57196  83.42209 106.99486    50 a c
+    ##   30  65.93456  66.25498  74.50335  75.90799  79.75036 109.47599    50 a
+    ##   50  67.34745  67.79331  75.19469  74.24777  81.23589 110.43351    50 ab
+    ##   75  73.80876  74.39447  80.65022  74.81652  87.78234  97.88324    50 c
+    ##  100  73.41202  74.04703  80.18060  74.54868  87.18580 100.43682    50 bc
+    ##  150  84.22918  84.84177  91.80059  88.15417  98.20942 110.56206    50 d
+    ##  200  95.16414  96.03317 103.78675 102.60769 109.54751 124.72909    50 e
+    ##  300 100.85332 101.92437 110.57415 114.17656 115.49912 127.33436    50 f
+    ##  500 135.84538 136.51482 146.19712 147.00547 150.89283 168.85675    50 g
+
+
+    ## algo 1
+    microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]], adjust.n = FALSE),
+                                   "30" = sCorrect(ls.lvmfit[["30"]], adjust.n = FALSE),
+                                   "50" = sCorrect(ls.lvmfit[["50"]], adjust.n = FALSE),
+                                   "75" = sCorrect(ls.lvmfit[["75"]], adjust.n = FALSE),
+                                   "100" = sCorrect(ls.lvmfit[["100"]], adjust.n = FALSE),
+                                   "150" = sCorrect(ls.lvmfit[["150"]], adjust.n = FALSE),
+                                   "200" = sCorrect(ls.lvmfit[["200"]], adjust.n = FALSE),
+                                   "300" = sCorrect(ls.lvmfit[["300"]], adjust.n = FALSE),
+                                   "500" = sCorrect(ls.lvmfit[["500"]], adjust.n = FALSE),
+                                   times = 50
+                                   )
+
+ ##    Unit: milliseconds
+ ## expr      min       lq     mean   median        uq       max neval cld
+ ##   20 61.12207 61.89103 67.11139 62.30654  74.28165  84.35549    50 ab
+ ##   30 57.61594 58.47489 63.14203 58.77178  69.97194  80.96973    50 a
+ ##   50 57.41271 58.22566 63.15129 58.60405  70.33352  81.86037    50 a
+ ##   75 59.96228 60.93910 65.10109 61.19560  71.52710  82.51120    50 ab
+ ##  100 59.27039 60.17768 65.60692 60.53852  73.16995  87.10152    50 ab
+ ##  150 64.17464 65.00253 70.36660 65.65108  77.83555  94.41263    50 bc
+ ##  200 68.49831 69.93842 75.63357 70.20745  83.07964  99.63952    50 c
+ ##  300 71.64350 73.22267 84.43144 79.54653  86.80744 261.91039    50 d
+ ##  500 88.03692 89.63215 97.82069 97.94335 103.16340 115.95299    50 e
+
+}

@@ -16,14 +16,13 @@ R CMD BATCH BATCH_simulation-mixedModel.R output/simulation-mixedModel/$JOB_NAME
 ## clean results      ## rm -r ./Results/simulation-mixedModel/*
 ## submission command ## qsub SUBM_simulation-mixedModel.sh
 
-## submission output  ## Your job-array 11076.1-40:1 ("simulation-mixedModel") has been submitted
-## submission time    ## 01/21/19 2:10 
+## submission output  ## Your job-array 11468.1-40:1 ("simulation-mixedModel") has been submitted
+## submission time    ## 02/18/19 2:46 
 ## duration
 #     user   system  elapsed 
-# 2325.897    8.319 2340.600 
+# 5723.226   25.610 9166.588 
 
-
-## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
+## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 
                       ## http://bayes/ganglia                                      : current load and history of the cluster
 

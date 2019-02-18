@@ -10,37 +10,13 @@ library(lmerTest)
 library(data.table)
 library(ggplot2)
 
-## library(foreign)
-## library(ggthemes)
-## library(butils) ## from github: bozenne/butils
-## library(gtable)
-## library(gridExtra)
-## library(grid)
-## library(lattice)
-
-## source(file.path(path.code,"FCT_createTable.R"))
-## source(file.path(path.code,"FCT_createFigure.R"))
-
 ## * Import
 
 ## ** simulation results
 dttype1.sim.mm <- readRDS(file.path(path.results, "type1error-simulation-mixedModel.rds"))
 dtbias.sim.mm <- readRDS(file.path(path.results, "bias-simulation-mixedModel.rds"))
+param.sim.mm <- readRDS(file.path(path.results, "param-simulation-mixedModel.rds"))
 dttype1.ill.mm <- readRDS(file.path(path.results, "type1error-illustration-mixedModel.rds"))
-
-## m.generative.mm <- lvm(c(Y1[mu1:sigma]~1*eta,
-##                       Y2[0:sigma]~1*eta,
-##                       Y3[mu3:sigma]~1*eta,
-##                       eta~beta1*G))
-## latent(m.generative.mm) <- ~eta
-## categorical(m.generative.mm, labels = c("M","F")) <- ~Gender
- 
-## m.fit.mm <- lvm(c(Y1[mu1:sigma]~1*eta,
-##                Y2[mu2:sigma]~1*eta,
-##                Y3[mu3:sigma]~1*eta,
-##                eta~beta1*G + beta2*Gender))
-## latent(m.fit.mm) <- ~eta
-## categorical(m.fit.mm, labels = c("M","F")) <- ~Gender
 
 ## ** real data
 dtL.vitamin <- fread(file.path(path.data, "vitamin.txt"), header = TRUE)
@@ -80,17 +56,32 @@ m.vitamin <- lvm(w1[mu1:sigma] ~ 1*eta,
                  eta ~ 0)
 latent(m.vitamin) <- ~eta
 
-vitamin.ML <- estimate(m.vitamin, data = dtW0.vitamin)
+vitamin.ML <- estimate(m.vitamin, data = dtW.vitamin)
 ## summary(vitamin.ML)
 
 coef.vitamin.ML <- coef(vitamin.ML)
 ## coef.vitamin.ML
 
-## * REML vs. ML estimates (section 2.1.1)
+## * Simulation study (section 7.1)
+
+## convergence
+dttype1.sim.mm[,100*min(n.rep)/20000, by = "n"]
+
+## number of parameters
+length(param.sim.mm)
+
+## inflation of the type 1 error without correction
+dttype1.sim.mm[n==20 & method %in% c("p.Ztest"), .(link,inflation = type1-0.05)]
+## nu2 is Y2
+## gamma1 is eta Gene1Y
+
+## type 1 error after correction
+dttype1.sim.mm[n==20 & method %in% c("p.KR")]
+
+## * Illustration (section 8.1)
 
 ## REML estimates
 Ftest.vitamin.REML <- anova(vitamin.REML)
-Ftest.vitamin.REML
 cat("\n")
 c(statistic = round(Ftest.vitamin.REML[["F value"]][2],2), 
   pvalue = round(Ftest.vitamin.REML[["Pr(>F)"]][2],4))
@@ -101,7 +92,6 @@ cbind("rdiff (%)" = round(rdiff,2))
 
 ## ML estimates
 Ftest.vitamin.ML <- lava::compare(vitamin.ML, par = c("w5~grpT","w6~grpT","w7~grpT")) ## 15.072/3
-Ftest.vitamin.ML
 cat("\n")
 c(statistic = round(Ftest.vitamin.ML[["statistic"]]/3, 2),
   pvalue = round(Ftest.vitamin.ML[["p.value"]], 5))
@@ -109,19 +99,6 @@ c(statistic = round(Ftest.vitamin.ML[["statistic"]]/3, 2),
 ## type 1 error found in the simulation
 dttype1.ill.mm[link == "global" & method == "p.Ztest",type1]
 
-## * corrected type 1 error in the simulation study (section 7.1)
-
-## chunk 16
-e.true.mm <- lava::estimate(m.fit.mm, lava::sim(m.generative.mm, n = 1e5))
-length(coef(e.true.mm))
-
-## chunk 17
-dtSS.coverage.mm[n==20 & method %in% c("p.Ztest"), .(link,inflation = type1-0.05)]
-
-## chunk 18
-dtSS.coverage.mm[n==20 & method %in% c("p.KR")]
-
-## * REML vs. corrected ML estimates (section 8.1)
 
 ## corrected ML estimates
 sCorrect(vitamin.ML) <- TRUE
@@ -132,11 +109,10 @@ Mcompare <- cbind("ML-correct" = coef.vitamin.MLc,
                   "REML" = coef.vitamin.REML,
                   "rdiff REML (%)" = 100*(coef.vitamin.MLc-coef.vitamin.REML)/abs(coef.vitamin.REML)
                   )
-Mcompare
+Mcompare[c("w1~~w1","eta~~eta"),]
 
 ## REML vs. corrected ML
 Ftest.vitamin.MLc <- compare2(vitamin.ML, par = c("w5~grpT","w6~grpT","w7~grpT")) ## 15.072/3
-Ftest.vitamin.MLc
 cat("\n")
 c(statistic = round(Ftest.vitamin.MLc[["statistic"]], 2),
   pvalue = round(Ftest.vitamin.MLc[["p.value"]], 5))
@@ -144,17 +120,8 @@ c(statistic = round(Ftest.vitamin.MLc[["statistic"]], 2),
 ## type 1 error found in the simulation
 dttype1.ill.mm[link == "global" & method %in% c("p.SSC","p.KR"),.(method,link,type1)]
 
-## ** Appendix E - table 1
 
-## chunk 22
-table1 <- createTable(dtSS.bias.mm, 
-                      seqN = c(20,30,50,100), 
-                      digit = 3, 
-                      seqType = c("Sigma_var","Psi_var"),
-                      convert2latex = FALSE)
-table1
-
-## ** Table 1
+## ** Table 2
 
 row.ML <- c("residual variance" = as.double(coef.vitamin.ML["w1~~w1"]),
             "variance random intercept" = as.double(coef.vitamin.ML["eta~~eta"]),
@@ -171,9 +138,10 @@ row.REML <- c("residual variance" = as.double(coef.vitamin.REML["sigma2"]),
               "statistic" = as.double(Ftest.vitamin.REML[["F value"]][2]),
               "degree of freedom" = as.double(Ftest.vitamin.REML[["DenDF"]][2]),
               "p-value" = Ftest.vitamin.REML[["Pr(>F)"]][2])
-cbind("ML" = row.ML, 
+M <- cbind("ML" = row.ML, 
       "ML with correction" = row.correctedML,
       "REML" = row.REML)
+print(M, digit = 3)
 
 ## ** figure (Appendix A.1)
 

@@ -1,23 +1,25 @@
 #!/bin/bash
 
-#$ -N IV  # Job name
+#$ -N comparison-ML-IV-GLS  # Job name
 #$ -t 1:40     # Number of jobs
 #$ -q all.q    # Queue. Use long.q for run time >8h and all.q otherwise
 #$ -l h_vmem=5G # Memory limit, e.g. reserve 1 GB memory 
 #$ -tc 128      # Max concurrent jobs
 #$ -cwd         # Run in current directory
-#$ -o output/IV/   # Direct output to subdirectory
-#$ -e output/IV/   # Direct output to subdirectory
+#$ -o output/comparison-ML-IV-GLS/   # Direct output to subdirectory
+#$ -e output/comparison-ML-IV-GLS/   # Direct output to subdirectory
 
-R CMD BATCH BATCH_IV.R output/IV/$JOB_NAME-I-$SGE_TASK_ID.Rout --no-restore --no-save
+R CMD BATCH BATCH_comparison-ML-IV-GLS.R output/comparison-ML-IV-GLS/$JOB_NAME-I-$SGE_TASK_ID.Rout --no-restore --no-save
 
-## go to directory    ## cd p:/Cluster/LVMproject/article-smallSampleInference/
-## clean outputs      ## rm -r ./output/IV/*
-## clean results      ## rm -r ./Results/IV/*
-## submission command ## qsub SUBM_IV.sh
+## go to directory    ## cd Cluster/LVMproject/article-smallSampleInference/
+## clean outputs      ## rm -r ./output/comparison-ML-IV-GLS/*
+## clean results      ## rm -r ./Results/comparison-ML-IV-GLS/*
+## submission command ## qsub SUBM_comparison-ML-IV-GLS.sh
 
-## submission output  ## Your job-array 11080.1-40:1 ("IV") has been submitted
-## submission time    ## 01/21/19 6:47  
+## submission output  ## Your job-array 11388.1-40:1 ("comparison-ML-IV-GLS") has been submitted
+## submission time    ## 02/08/19 10:38 
+#     user   system  elapsed 
+# 9554.332   96.733 8283.346 
 
 ## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 

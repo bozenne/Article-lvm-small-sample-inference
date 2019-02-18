@@ -16,10 +16,10 @@ R CMD BATCH BATCH_illustration-mixedModel.R output/illustration-mixedModel/$JOB_
 ## clean results      ## rm -r ./Results/illustration-mixedModel/*
 ## submission command ## qsub SUBM_illustration-mixedModel.sh
 
-## submission output  ## Your job-array 11067.1-40:1 ("illustration-mixedModel") has been submitted
-## submission time    ## 01/18/19 4:54 
- #    user  system elapsed 
- # 110.218   1.566 114.161 
+## submission output  ## Your job-array 11186.1-40:1 ("illustration-mixedModel") has been submitted
+## submission time    ## 01/31/19 3:52 
+#    user  system elapsed 
+# 748.370   3.610 754.717
 
 ## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 

@@ -16,8 +16,8 @@ R CMD BATCH BATCH_illustration-factorModel.R output/illustration-factorModel/$JO
 ## clean results      ## rm -r ./Results/illustration-factorModel/*
 ## submission command ## qsub SUBM_illustration-factorModel.sh
 
-## submission output  ## Your job-array 11070.1-40:1 ("illustration-factorModel") has been submitted
-## submission time    ## 01/18/19 6:00 
+## submission output  ## Your job-array 11425.1-40:1 ("illustration-factorModel") has been submitted
+## submission time    ## 02/12/19 10:10 
 
 ## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 

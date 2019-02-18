@@ -1,9 +1,12 @@
 ## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
-## setwd(path)
+## setwd(path) 
 
 library(data.table)
 library(ggplot2)
+source("FCT.R") ## get function createFigure/createFigureBIS/groupFigures
 export <- TRUE
+
+## TODO decrease thickness of lines figures BIS
 
 ## * path
 path.results <- "./Results"
@@ -16,8 +19,8 @@ dtLS.sim.MMtype1 <- readRDS(file.path(path.results,"type1error-simulation-mixedM
 ## dtLS.sim.MMtype1[link == "eta~G", linkn := "eta~Age"]
 
 dtLS.sim.factortype1 <- readRDS(file.path(path.results,"type1error-simulation-factorModel.rds"))
-dtLS.sim.factortype1[link == "Y1~Gene1Y", link := "Y1~Gene2Y"]
-dtLS.sim.factortype1[link == "eta~Gene2Y", link := "eta~Gene1Y"]
+## dtLS.sim.factortype1[link == "Y1~Gene1Y", link := "Y1~Gene2Y"]
+## dtLS.sim.factortype1[link == "eta~Gene2Y", link := "eta~Gene1Y"]
 ## dtLS.sim.factortype1[link == "eta~G", link := "eta~Age"]
 
 dtLS.sim.lvmtype1 <- readRDS(file.path(path.results,"type1error-simulation-lvmModel.rds"))
@@ -85,141 +88,12 @@ dtLS.sim.lvmtype1[link %in% names(greek.label.lvm), link.txt := factor(link,
 label.statistic <- c( 
     Ztest = "Gaussian approx.",
     Satt = "Satterthwaite approx.",
-    SSC = "small sample correction",
-    KR = "Satterthwaite approx. with small sample correction"
+    SSC = "bias correction",
+    KR = "Satterthwaite approx. with bias correction"
 )
 name.statistic <- names(label.statistic)
 n.statistic <- length(name.statistic)
 
-## * FUNCTION
-createFigure <- function(data, robust, link, vec.name, vec.label){
-    data <- data.table::copy(data)
-    
-    index.keep <- which(data$robust==robust)
-    data <- data[index.keep]
-    
-    if(any(link %in% data$link == FALSE)){
-        txt <- link[link %in% data$link == FALSE]
-        stop("Incorrect link: \"",paste(txt, collapse = "\" \""),"\" \n")
-    }
-    index.keep <- which(data$link %in% link)
-    data <- data[index.keep]
-
-    link2link.txt <- data[!duplicated(link),setNames(link.txt,link)]
-    data$link.txt <- factor(data$link.txt, levels = link2link.txt[link])
-    data$correction <- factor(data$correction, levels = vec.name)
-    setkeyv(data, cols = c("link.txt","correction"))
-    
-    if(any(data[,.N,by = c("correction","n","link.txt")][["N"]]!=1)){
-        stop("The combination \"correction\" \"n\" \"link.txt\" must lead exactly to one point \n")
-    }
-    n.name <- length(vec.name)
-    seq.shape <- seq(from = 15, by = 1, length.out = n.name)
-
-    gg <- ggplot(data, aes(x=as.factor(n),y=type1,group=correction,color=correction,shape=correction))
-    gg <- gg + geom_abline(intercept = 0.05, slope = 0, size = 2)
-    gg <- gg + geom_point(size = 4) + geom_line(size = 2)
-    gg <- gg + facet_grid(~link.txt, labeller = label_parsed)
-    gg <- gg + xlab("sample size")
-    gg <- gg + theme(text = element_text(size = 25)) + theme(legend.key.height = unit(0.05, "npc"), legend.key.width = unit(0.08, "npc"))
-    gg <- gg + scale_color_manual("",
-                                  breaks = vec.name,
-                                  label = vec.label,
-                                  values = ggthemes::colorblind_pal()(n.name+2)[c(6,2:4)])
-    gg <- gg + scale_shape_manual("",
-                                  breaks = vec.name,
-                                  label = vec.label,
-                                  values = seq.shape)
-    gg <- gg + ylab("type 1 error rate") 
-    gg <- gg + theme(legend.position = "bottom") + guides(color=guide_legend(nrow=2,byrow=TRUE))
-    gg <- gg + scale_y_continuous(breaks = scales::pretty_breaks(n = 5))
-    return(gg)
-}
-
-createFigureBIS <- function(data, n, robust, link = NULL, vec.name, vec.label){
-    data <- data.table::copy(data)[!is.na(link.txt)]    
-    
-    index.keep <- which(data$robust==robust)
-    data <- data[index.keep]
-
-    index.keep <- which(data$n%in%n)
-    data <- data[index.keep]
-    data[,n := paste0("sample size = ",factor(data$n))]
-    
-    if(!is.null(link)){
-        if(any(link %in% data$link == FALSE)){
-            txt <- link[link %in% data$link == FALSE]
-            stop("Incorrect link: \"",paste(txt, collapse = "\" \""),"\" \n")
-        }
-        index.keep <- which(data$link %in% link)
-        data <- data[index.keep]
-    }else{
-        link <- unique(data$link)
-    }
-    
-    link2link.txt <- data[!duplicated(link),setNames(link.txt,link)]
-    data$link.txt <- factor(data$link.txt, levels = link2link.txt[link])
-    data$correction <- factor(data$correction, levels = vec.name)
-    setkeyv(data, cols = c("link.txt","correction"))
-
-    if(any(data[,.N,by = c("correction","n","link.txt")][["N"]]!=1)){
-        stop("The combination \"correction\" \"n\" \"link.txt\" must lead exactly to one point \n")
-    }
-
-    vecX.label <- sapply(unique(data$link.txt), function(iLink){
-        text = strsplit(gsub(pattern = "paste(", replacement = "", x = as.character(iLink), fixed = TRUE),
-                        split = ",")[[1]][1]
-    })
-    vecX.expr <- eval(parse(text = paste0("c(",paste(paste("expression(",vecX.label,")",sep=""),collapse=","),")")))
-    
-    n.name <- length(vec.name)
-    seq.shape <- seq(from = 15, by = 1, length.out = n.name)
-    gg <- ggplot(data, aes(x=link.txt,y=type1,group=correction,color=correction,shape=correction))
-    gg <- gg + geom_abline(intercept = 0.05, slope = 0, size = 2)
-    gg <- gg + geom_point(size = 4) + geom_line(size = 2)
-    gg <- gg + facet_grid(~n)
-    gg <- gg + theme(text = element_text(size = 25)) + theme(legend.key.height = unit(0.05, "npc"), legend.key.width = unit(0.08, "npc"))
-    gg <- gg + xlab("") + scale_x_discrete(labels = vecX.expr)
-
-    
-    gg <- gg + scale_color_manual("",
-                                  breaks = vec.name,
-                                  label = vec.label,
-                                  values = ggthemes::colorblind_pal()(n.name+2)[c(6,2:4)])
-    gg <- gg + scale_shape_manual("",
-                                  breaks = vec.name,
-                                  label = vec.label,
-                                  values = seq.shape)
-    gg <- gg + ylab("type 1 error rate") 
-    gg <- gg + theme(legend.position = "bottom", axis.text.x = element_text(angle = 90, hjust = 1)) + guides(color=guide_legend(nrow=2,byrow=TRUE))
-    gg <- gg + scale_y_continuous(breaks = scales::pretty_breaks(n = 5))
-    return(gg)
-}
-groupFigures <- function(figure1, figure2, figure3, reduce.x = TRUE){
-    x.factor <- c("20" = "black", "30" = "black", "50" = "black", "75" = "black", "100" = "black",
-                  "150" = "transparent", "200" = "black", "300" = "transparent", "500" = "black")
-    x.lvm <- c("20" = "black", "30" = "transparent", "50" = "black", "75" = "transparent", "100" = "black",
-               "150" = "transparent", "200" = "black", "300" = "transparent", "500" = "black")
-
-    figure1 <- figure1 + ggtitle("scenario (a): mixed model") + xlab("") + theme(text = element_text(size = 10), legend.position="none")
-    figure2 <- figure2 + ggtitle("scenario (b): single factor model") + xlab("") + theme(text = element_text(size = 10), legend.position="none")
-    if(reduce.x == TRUE){
-        figure2 <- figure2 + theme(axis.text.x=element_text(color=x.factor))
-    }
-    figure3 <- figure3 + ggtitle("scenario (c): two latent variables model") + theme(text = element_text(size = 10))
-    figure3 <- figure3 + guides(color=guide_legend(nrow=2,byrow=TRUE)) + theme(legend.margin=margin(t = -0.5, unit='cm'))
-    if(reduce.x == TRUE){
-        figure3 <- figure3 + theme(axis.text.x=element_text(color=x.lvm))
-    }
-    ls.figure <- list(figure1 + theme(plot.margin=unit(c(0,0.1,0,0),"cm")),
-                      figure2 + theme(plot.margin=unit(c(0,0.1,0,0),"cm")),
-                      figure3 + theme(plot.margin=unit(c(0,0.1,0,0),"cm")))
-    arrange.figure <- gridExtra::grid.arrange(grobs=ls.figure[1:3], ncol=1, widths = 10, 
-                                              heights=unit(c(7,7,9), c("cm", "cm")))
-
-    return(arrange.figure)
-
-}
 
 ## * Figure 3
 ## unique(dtLS.sim.factortype1$link)
@@ -235,7 +109,6 @@ gg.lvm <- createFigure(dtLS.sim.lvmtype1,
                        robust = FALSE, link = c("Y2","Y1~Gene2Y","Y4~eta1","eta1~Gene1Y","eta1~eta2","Y1~~Y2"),
                        vec.name = name.statistic,
                        vec.label = label.statistic)
-
 ## groupFigures(gg.mm,gg.factor,gg.lvm)
 
 if(export){
@@ -314,18 +187,109 @@ if(export){
     dev.off()
 }
 
-## * IV
-dtLS.sim.IV <- readRDS(file.path(path.results,"type1error-simulation-IV.rds"))
-##unique(dtLS.sim.IV$link)
-dtLS.sim.IV[link == "Y2~X1", link := "Y1~Gene2Y"]
-dtLS.sim.IV[link == "eta~GenderF", link := "eta~Gene1Y"]
-dtLS.sim.IV[link == "eta~G", link := "eta~Age"]
+## * Tables reviewers
+greek.label.factor2 <- c("eta" = "$\\alpha$",
+                         "Y2" = "$\\nu_2$",
+                         "Y3" = "$\\nu_3$",
+                         "Y4" = "$\\nu_4$",
+                         "Y2~Gene1Y" = "$k_1$",
+                         "eta~Gene2Y" = "$\\gamma_1$",
+                         "eta~Age" = "$\\gamma_2$",
+                         "Y2~eta" = "$\\lambda_2$",
+                         "Y3~eta" = "$\\lambda_3$",
+                         "Y4~eta" = "$\\lambda_4$")
 
-dtLS.sim.IV[link %in% names(greek.label.factor), link.txt := factor(link,
-                                                                    levels = names(greek.label.factor),
-                                                                    labels = as.character(greek.label.factor))]
-gg.IV <- createFigure(dtLS.sim.IV[correction == "Ztest"],
-                      robust = FALSE, link = c("Y2","Y4~eta","eta~Gene1Y","Y1~Gene2Y"),
-                      vec.name = name.statistic,
-                      vec.label = label.statistic)
+## ** comparisons
+
+
+dtLS.sim.Comptype1 <- readRDS(file.path(path.results,"type1error-simulation-comparison.rds"))
+
+dtLS.sim.Comptype1[link %in% names(greek.label.factor2), link.txt := factor(link,
+                                                                            levels = names(greek.label.factor2),
+                                                                            labels = as.character(greek.label.factor2))]
+dtLS.sim.Comptype1[estimator == "IV", estimator := "IV (lava)"]
+dtLS.sim.Comptype1[estimator == "IVlavaan", estimator := "IV (lavaan)"]
+dtLS.sim.Comptype1[estimator == "robustML", estimator := "robust ML"]
+
+
+addtorow <- list()
+addtorow$pos <- list(10)
+addtorow$command <- "[4mm]"
+table.R1 <- dcast(dtLS.sim.Comptype1,
+                  formula = link.txt+n ~ estimator, value.var = "type1")[n%in%c(20,50)]
+setnames(table.R1, old = c("link.txt"), new = c("parameter"))
+table.R1 <- table.R1[order(table.R1$n),]
+table.R1$n[duplicated(table.R1$n)] <- ""
+
+order.col <- c("parameter","n","ML","robust ML","GLS","WLS","IV (lava)","IV (lavaan)")
+print(xtable::xtable(table.R1[,.SD,.SDcols = order.col], label = "tab:comparison", caption = "Comparison of the type 1 error of Wald tests for various estimation methods in scenario (b) under a correctly specified model. No small sample correction is used. Robust ML corresponds to the use of robust Wald tests.", digits = 3),
+      add.to.row =  addtorow, NA.string="NA",
+      include.rownames = FALSE, booktabs = TRUE, sanitize.text.function = function(x){x})
+
+
+## ** misspecification correction small samples (student)
+dtLS.sim.IV1type1 <- readRDS(file = file.path("Results","type1error-simulation-IV1.rds"))
+
+dtLS.sim.IV1type1[link %in% names(greek.label.factor2), link.txt := factor(link,
+                                                                            levels = names(greek.label.factor2),
+                                                                           labels = as.character(greek.label.factor2))]
+dtLS.sim.IV1type1[estimator == "IV", estimator := "IV (lava)"]
+dtLS.sim.IV1type1[estimator == "IVlavaan", estimator := "IV (lavaan)"]
+dtLS.sim.IV1type1[estimator == "robustML", estimator := "robust ML"]
+dtLS.sim.IV1type1[estimator == "robustMLC", estimator := "corrected robust ML"]
+
+table.R2 <- dcast(dtLS.sim.IV1type1, formula = link.txt+n ~ estimator, value.var = "type1")[n==20]
+
+names(table.R2)[1] <- "parameter"
+order.col <- c("parameter","n","robust ML","corrected robust ML","IV (lava)","IV (lavaan)")
+table.R2$n[duplicated(table.R2$n)] <- ""
+
+print(xtable::xtable(table.R2[,.SD,.SDcols = order.col], label = "tab:student", caption = "Type 1 error of Wald tests in a misspecified latent variable model (residuals following a Student's t-distribution)", digits = 3), NA.string="NA",
+      include.rownames = FALSE, booktabs = TRUE, sanitize.text.function = function(x){x})
+
+## ** misspecification correction small samples (misspecified covariance structure)
+dtLS.sim.IV3type1 <- readRDS(file = file.path("Results","type1error-simulation-IV3.rds"))
+
+dtLS.sim.IV3type1[link %in% names(greek.label.factor2), link.txt := factor(link,
+                                                                           levels = names(greek.label.factor2),
+                                                                           labels = as.character(greek.label.factor2))]
+dtLS.sim.IV3type1[estimator == "IV", estimator := "IV (lava)"]
+dtLS.sim.IV3type1[estimator == "IVlavaan", estimator := "IV (lavaan)"]
+dtLS.sim.IV3type1[estimator == "robustML", estimator := "robust ML"]
+dtLS.sim.IV3type1[estimator == "robustMLC", estimator := "corrected robust ML"]
+
+table.R3 <- dcast(dtLS.sim.IV3type1, formula = link.txt+n ~ estimator, value.var = "type1")[n==20]
+
+names(table.R3)[1] <- "parameter"
+order.col <- c("parameter","n","robust ML","corrected robust ML","IV (lava)","IV (lavaan)")
+table.R3$n[duplicated(table.R2$n)] <- ""
+
+print(xtable::xtable(table.R3[,.SD,.SDcols = order.col], label = "tab:miscov", caption = "Type 1 error of Wald tests in a misspecified latent variable model (incorrect covariance structure)", digits = 3), NA.string="NA",
+      include.rownames = FALSE, booktabs = TRUE, sanitize.text.function = function(x){x})
+
+
+## ** timings
+
+bench.MM <- readRDS(file.path(path.results,"speed-Algo2-MM.rds"))
+bench.Factor <- readRDS(file.path(path.results,"speed-Algo2-Factor.rds"))
+bench.Lvm <- readRDS(file.path(path.results,"speed-Algo2-LVM.rds"))
+class(bench.MM)
+
+## args(microbenchmark:::summary.microbenchmark)
+speed.Algo2 <- rbind(cbind(scenario = "a", summary(bench.MM, unit = "s")),
+                     cbind(scenario = "b", summary(bench.Factor, unit = "s")),
+                     cbind(scenario = "c", summary(bench.Lvm, unit = "s")))
+names(speed.Algo2)[names(speed.Algo2)=="expr"] <- "n"
+keep.col <- c("scenario","n","min","mean","median","max")
+speed.Algo2 <- speed.Algo2[,keep.col]
+speed.Algo2$scenario <- as.character(speed.Algo2$scenario)
+speed.Algo2$scenario[duplicated(speed.Algo2$scenario)] <- ""
+
+
+addtorow <- list()
+addtorow$pos <- list(9,18)
+addtorow$command <- c("[4mm]","[4mm]")
+print(xtable::xtable(speed.Algo2, label = "tab:speed", caption = "Computation time for algorithm 2 over 50 repetitions (1 CPU: AMD Opteron(tm) Processor 6380, 2.44 GHz).", digits = 3),
+      add.to.row =  addtorow, 
+      include.rownames = FALSE, booktabs = TRUE, sanitize.text.function = function(x){x})
 

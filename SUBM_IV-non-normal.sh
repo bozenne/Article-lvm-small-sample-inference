@@ -1,23 +1,25 @@
 #!/bin/bash
 
-#$ -N non-normal  # Job name
+#$ -N IV-non-normal  # Job name
 #$ -t 1:40     # Number of jobs
-#$ -q all.q    # Queue. Use long.q for run time >8h and all.q otherwise
-#$ -l h_vmem=1G # Memory limit, e.g. reserve 1 GB memory 
+#$ -q long.q    # Queue. Use long.q for run time >8h and all.q otherwise
+#$ -l h_vmem=5G # Memory limit, e.g. reserve 1 GB memory 
 #$ -tc 128      # Max concurrent jobs
 #$ -cwd         # Run in current directory
-#$ -o output/non-normal/   # Direct output to subdirectory
-#$ -e output/non-normal/   # Direct output to subdirectory
+#$ -o output/IV-non-normal/   # Direct output to subdirectory
+#$ -e output/IV-non-normal/   # Direct output to subdirectory
 
-R CMD BATCH BATCH_non-normal.R output/non-normal/$JOB_NAME-I-$SGE_TASK_ID.Rout --no-restore --no-save
+R CMD BATCH BATCH_IV-non-normal.R output/IV-non-normal/$JOB_NAME-I-$SGE_TASK_ID.Rout --no-restore --no-save
 
 ## go to directory    ## cd Cluster/LVMproject/article-smallSampleInference/
-## clean outputs      ## rm -r ./output/non-normal/*
-## clean results      ## rm -r ./Results/non-normal/*
-## submission command ## qsub SUBM_non-normal.sh
+## clean outputs      ## rm -r ./output/IV-non-normal/*
+## clean results      ## rm -r ./Results/IV-non-normal/*
+## submission command ## qsub SUBM_IV-non-normal.sh
 
-## submission output  ## Your job-array 11074.1-40:1 ("non-normal") has been submitted
-## submission time    ## 
+## submission output  ## Your job-array 11452.1-40:1 ("IV-non-normal") has been submitted
+## submission time    ## 02/14/19 5:04 
+#     user   system  elapsed 
+# 5273.805   46.836 4877.423 
 
 ## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 

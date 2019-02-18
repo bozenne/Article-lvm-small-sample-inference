@@ -7,33 +7,22 @@ path.data <- "./data2/"
 ## * packages
 devtools::load_all("lavaSearch2")
 library(data.table)
-library(ggplot2)
 
 ## * Import
 
 ## ** simulation results
 dttype1.sim.factor <- readRDS(file.path(path.results, "type1error-simulation-factorModel.rds"))
 dtbias.sim.factor <- readRDS(file.path(path.results, "bias-simulation-factorModel.rds"))
+param.sim.factor <- readRDS(file.path(path.results, "param-simulation-factorModel.rds"))
 dttype1.ill.factor <- readRDS(file.path(path.results, "type1error-illustration-factorModel.rds"))
 
-## m.generative.factor <- lvm(c(Y1~eta,
-                             ## Y2~eta,
-                             ## Y3~eta,
-                             ## Y4~1, X1 ~ 1,
-                             ## eta~G))
-## latent(m.generative.factor) <- ~eta
-## categorical(m.generative.factor, labels = c("M","F")) <- ~Gender
-
-## m.fit.factor <- lvm(c(Y1~eta+X1,
-                      ## Y2~eta,
-                      ## Y3~eta,
-                      ## Y4~eta,
-                      ## eta~G+Gender))
-## latent(m.fit.factor) <- ~eta
-
 ## ** real data
-dt0.bdnf <- fread(file.path(path.data,"SB_5HTTLPR_Patrick_Klaus.csv"))
-
+if(dir.exists(path.data)){
+    dt0.bdnf <- fread(file.path(path.data,"SB_5HTTLPR_Patrick_Klaus.csv"))
+}else{
+    stop("Data relative to example 2 is under the Danish rules on data protection which do not allow to freely share person-sensitive health
+care related data - contact the corresponding author of the paper for more information \n")
+}
 ## * Analysis of the dataset
 
 ## ** data processing
@@ -95,7 +84,22 @@ e.bdnf2 <- estimate(m.bdnf2, data = dt.bdnf, cluster = "cimbi.id",
 bdnf.null <- c('u~bdnf2mx', 'neo~httlpr2sx')
 coef.bdnf.ML <- coef(e.bdnf2)
 
-## * ML estimates (section 2.1.2)
+
+## * Simulation study (section 7.2) 
+
+## convergence
+dttype1.sim.factor[,100*min(n.rep)/20000, by = "n"]
+
+## number of parameters
+length(param.sim.factor)
+
+## inflation of the type 1 error without correction
+dttype1.sim.factor[n == 20 & link %in% c("Y2","Y4~eta","eta~Gene1Y","Y1~Gene2Y") & method %in% c("p.robustZtest"), .(link,type1 = type1, inflation = type1-0.05)]
+
+## type 1 error after correction
+dttype1.sim.factor[n == 20 & link %in% c("Y2","Y4~eta","eta~Gene1Y","Y1~Gene2Y") & method %in% c("p.robustKR"), .(link,type1)]
+
+## * Illustration (section 8.2)
 
 ## number of patients/observations
 c(nrow = NROW(dt.bdnf), n.id = length(unique(dt.bdnf$cimbi.id)))
@@ -108,20 +112,6 @@ summary(e.bdnf2)$coef[bdnf.null,]
 
 ## type 1 error from the simulation
 dttype1.ill.factor[method == "p.robustZtest",.(link,type1)]
-
-## * corrected type 1 error in the simulation study (section 7.2) 
-
-## chunk 36
-e.true.factor <- lava::estimate(m.fit.factor, lava::sim(m.generative.factor, n = 1e5))
-length(coef(e.true.factor))
-
-## chunk 37
-dtSS.coverage.factor[n==20 & method %in% c("p.Ztest"), .(link,inflation = type1-0.05)]
-
-## chunk 38
-dtSS.coverage.factor[n==20 & method %in% c("p.KR"), .(link,type1)]
-
-## * corrected ML estimates (section 8.1)
 
 ## corrected ML estimates
 sCorrect(e.bdnf2) <- TRUE
@@ -144,13 +134,5 @@ cbind(pvalue = summary(e.bdnf2, robust = TRUE)$coef[bdnf.null,"P-value"],
 cbind(dttype1.ill.factor[method == "p.robustKR",.(link,type1MLc = type1)],
       dttype1.ill.factor[method == "p.robustZtest",.(typeML=type1)])
 
-## * Appendix E - table 2
-
-table2 <- createTable(dtSS.bias.factor, 
-                      seqN = c(20,30,50,100), 
-                      digit = 3, 
-                      seqType = c("Sigma_var","Psi_var"),
-                      convert2latex = FALSE)
-table2
 
 

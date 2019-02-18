@@ -33,7 +33,8 @@ if(dir.exists(path.output)==FALSE){
 ## * libraries
 library(lava)
 library(data.table)
-devtools::load_all("lavaSearch2")
+## devtools::load_all("lavaSearch2")
+library(lavaSearch2)
 
 ## * settings
 seqN <- c(73)

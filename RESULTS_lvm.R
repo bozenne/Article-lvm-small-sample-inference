@@ -7,7 +7,6 @@ path.data <- "./data2/"
 ## * packages
 devtools::load_all("lavaSearch2")
 library(data.table)
-library(ggplot2)
 library(foreign)
 
 ## * Import
@@ -15,28 +14,17 @@ library(foreign)
 dttype1.sim.lvm <- readRDS(file.path(path.results, "type1error-simulation-lvmModel.rds"))
 dtbias.sim.lvm <- readRDS(file.path(path.results, "bias-simulation-lvmModel.rds"))
 dttype1.ill.lvm <- readRDS(file.path(path.results, "type1error-illustration-lvmModel.rds"))
-
-## m.generative.lvm <- lvm(c(Y1,Y2,Y3,Y5) ~ eta1,
-                        ## Y4 ~ 1,
-                        ## Age ~ 1,
-                        ## c(Z1,Z2,Z3,Z4,Z5) ~ eta2,
-                        ## eta1 ~ G1,
-                        ## eta2 ~ G2)
-## latent(m.generative.lvm) <- ~eta1+eta2
-
-## m.fit.lvm <- lvm(c(Y1,Y2,Y3,Y4,Y5) ~ eta1,
-                 ## c(Z1,Z2,Z3,Z4,Z5) ~ eta2,
-                 ## Y1 ~ Age,
-                 ## eta1 ~ G1 + Age,
-                 ## eta2 ~ G2,
-                 ## eta1 ~ eta2)
-## covariance(m.fit.lvm) <- Y1 ~ Y2 
-## latent(m.fit.lvm) <- ~eta1+eta2
+param.sim.lvm <- readRDS(file.path(path.results, "param-simulation-lvmModel.rds"))
 
 ## ** real data
+if(dir.exists(path.data)){
+    dt0.memory <- as.data.table(read.spss(file.path(path.data,"SPSSmedscan_v2.sav"), to.data.frame = TRUE))
+    dt0.gene <- fread(file.path(path.data,"SB_5HTTLPR_Patrick_Klaus.csv"))
+}else{ 
+    stop("Data relative to example 3 is under the Danish rules on data protection which do not allow to freely share person-sensitive health
+care related data - contact the corresponding author of the paper for more information \n")
+}
 
-dt0.memory <- as.data.table(read.spss(file.path(path.data,"SPSSmedscan_v2.sav"), to.data.frame = TRUE))
-dt0.gene <- fread(file.path(path.data,"SB_5HTTLPR_Patrick_Klaus.csv"))
 
 ## * Analysis of the dataset
 
@@ -110,7 +98,18 @@ e.memory <- estimate(m.memory, data = dtG.memory,
 memory.null <- c( c('m.pos~u', 'm.neg~u', 'm.neu~u'))
 coef.memory.ML <- coef(e.memory)
 
-## * ML estimates (section 2.1.3)
+## * Simulation study (section 7.3)
+
+## number of parameters in the model
+length(param.sim.lvm)
+
+## type 1 error 
+keep.link <- c("Y2", "Y4~eta1","Y1~Gene2Y", "eta1~Gene1Y","eta1~eta2","Y1~~Y2")
+cbind(dttype1.sim.lvm[n==20 & link %in% keep.link & method %in% c("p.Ztest"), .(link,type1ML = type1)],
+      dttype1.sim.lvm[n==20 & link %in% keep.link & method %in% c("p.SSC"),.(type1MLssc = type1)],
+      dttype1.sim.lvm[n==20 & link %in% keep.link & method %in% c("p.KR"),.(type1MLc = type1)])
+
+## * Illustration (section 8.3)
 
 ## number of patients/observations
 c(nrow = NROW(dtG.memory), id = length(unique(dtG.memory$cimbi.id)))
@@ -120,19 +119,6 @@ summary(e.memory)$coef[memory.null,]
 
 ## type 1 error from the simulation
 dttype1.ill.lvm[method == "p.Ztest",.(link,type1)]
-
-## * corrected type 1 error in the simulation study (section 7.3)
-
-## chunk 57
-e.true.lvm <- lava::estimate(m.fit.lvm, lava::sim(m.generative.lvm, n = 1e5))
-length(coef(e.true.lvm))
-
-## chunk 58
-cbind(dtSS.coverage.lvm[n==20 & method %in% c("p.Ztest"), .(link,type1ML = type1)],
-      dtSS.coverage.lvm[n==20 & method %in% c("p.SSC"),.(type1MLssc = type1)],
-      dtSS.coverage.lvm[n==20 & method %in% c("p.KR"),.(type1MLc = type1)])
-
-## * corrected ML estimates (section 8.3)
 
 ## corrected ML estimates
 sCorrect(e.memory) <- TRUE

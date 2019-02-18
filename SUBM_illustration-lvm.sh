@@ -2,7 +2,7 @@
 
 #$ -N illustration-lvm  # Job name
 #$ -t 1:40     # Number of jobs
-#$ -q all.q    # Queue. Use long.q for run time >8h and all.q otherwise
+#$ -q long.q    # Queue. Use long.q for run time >8h and all.q otherwise
 #$ -l h_vmem=2G # Memory limit, e.g. reserve 1 GB memory 
 #$ -tc 128      # Max concurrent jobs
 #$ -cwd         # Run in current directory
@@ -11,14 +11,16 @@
 
 R CMD BATCH BATCH_illustration-lvm.R output/illustration-lvm/$JOB_NAME-I-$SGE_TASK_ID.Rout --no-restore --no-save
 
-## go to directory    ## cd p:/Cluster/LVMproject/article-smallSampleInference/
+## go to directory    ## cd Cluster/LVMproject/article-smallSampleInference/
 ## clean outputs      ## rm -r ./output/illustration-lvm/*
 ## clean results      ## rm -r ./Results/illustration-lvm/*
 ## submission command ## qsub SUBM_illustration-lvm.sh
 
-## submission output  ## Your job-array 11071.1-40:1 ("illustration-lvm") has been submitted
-## submission time    ## 01/18/19 6:00 
-
+## submission output  ## Your job-array 11282.1-40:1 ("illustration-lvm") has been submitted
+## submission time    ## 02/05/19 2:13 
+     # user    system   elapsed 
+	 # 24754.220   160.062 24978.706
+	 
 ## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 
                       ## http://bayes/ganglia                                      : current load and history of the cluster
