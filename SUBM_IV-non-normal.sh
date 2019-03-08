@@ -16,8 +16,8 @@ R CMD BATCH BATCH_IV-non-normal.R output/IV-non-normal/$JOB_NAME-I-$SGE_TASK_ID.
 ## clean results      ## rm -r ./Results/IV-non-normal/*
 ## submission command ## qsub SUBM_IV-non-normal.sh
 
-## submission output  ## Your job-array 11452.1-40:1 ("IV-non-normal") has been submitted
-## submission time    ## 02/14/19 5:04 
+## submission output  ## Your job-array 11574.1-40:1 ("IV-non-normal") has been submitted
+## submission time    ## 03/07/19 12:32 
 #     user   system  elapsed 
 # 5273.805   46.836 4877.423 
 

@@ -19,7 +19,7 @@ path.illustration.factorModel <- "./Results/illustration-factorModel"
 path.illustration.lvm <- "./Results/illustration-lvm"
 
 ## * Simulation
-cat("Simulation: ")
+cat("Simulation: \n")
 
 ## ** Mixed model - type 1 error
 cat(" - mixed model (type 1 error) \n")
@@ -56,8 +56,8 @@ cat(" - mixed model (bias) \n")
 
 dt.sim.MMestimate <- sinkDirectory(path.simulation.mixedModel,
                                    string.keep = "estimate", string.exclude = "(tempo)")
-dt.sim.MMestimate[, bias.ML := estimate.truth - estimate.ML]
-dt.sim.MMestimate[, bias.MLcorrected := estimate.truth - estimate.MLcorrected]
+dt.sim.MMestimate[, bias.ML := estimate.ML - estimate.truth]
+dt.sim.MMestimate[, bias.MLcorrected := estimate.MLcorrected - estimate.truth]
 
 dtL.sim.MMestimate <- melt(dt.sim.MMestimate,
                        id.vars = c("n","rep","seed","iFile","type","name"),
@@ -110,24 +110,24 @@ cat(" - factor model (bias) \n")
 
 dt.sim.factorestimate <- sinkDirectory(path.simulation.factorModel,
                                        string.keep = "estimate", string.exclude = "(tempo)")
-dt.sim.factorestimate[, bias.ML := estimate.truth - estimate.ML]
-dt.sim.factorestimate[, bias.MLcorrected := estimate.truth - estimate.MLcorrected]
+dt.sim.factorestimate[, bias.ML := estimate.ML - estimate.truth]
+dt.sim.factorestimate[, bias.MLcorrected := estimate.MLcorrected - estimate.truth]
 
 dtL.sim.factorestimate <- melt(dt.sim.factorestimate,
-                       id.vars = c("n","rep","seed","iFile","type","name"),
-                       measure.vars = c("bias.ML","bias.MLcorrected"),
-                       value.name = "bias", variable.name = "corrected")
+                               id.vars = c("n","rep","seed","iFile","type","name"),
+                               measure.vars = c("bias.ML","bias.MLcorrected"),
+                               value.name = "bias", variable.name = "corrected")
 dtL.sim.factorestimate[,corrected := factor(corrected, levels = c("bias.ML","bias.MLcorrected"), labels = c("FALSE","TRUE"))]
 
 dtLS.sim.factorestimate <- dtL.sim.factorestimate[,.(rep = .N,
-                                             inf = quantile(bias,probs = 0.05),
-                                             lower = quantile(bias,probs = 0.25),
-                                             middle = quantile(bias,probs = 0.5),
-                                             upper = quantile(bias,probs = 0.75),
-                                             sup = quantile(bias,probs = 0.95),
-                                             mean = mean(bias),
-                                             sd = sd(bias)),
-                                          by = c("n","corrected","type")]
+                                                     inf = quantile(bias,probs = 0.05),
+                                                     lower = quantile(bias,probs = 0.25),
+                                                     middle = quantile(bias,probs = 0.5),
+                                                     upper = quantile(bias,probs = 0.75),
+                                                     sup = quantile(bias,probs = 0.95),
+                                                     mean = mean(bias),
+                                                     sd = sd(bias)),
+                                                  by = c("n","corrected","type")]
 
 ## ** lvm - type 1 error
 cat(" - lvm (type 1 error) \n")
@@ -163,8 +163,8 @@ cat(" - lvm (bias) \n")
 
 dt.sim.lvmestimate <- sinkDirectory(path.simulation.lvm,
                                string.keep = "estimate", string.exclude = "(tempo)")
-dt.sim.lvmestimate[, bias.ML := estimate.truth - estimate.ML]
-dt.sim.lvmestimate[, bias.MLcorrected := estimate.truth - estimate.MLcorrected]
+dt.sim.lvmestimate[, bias.ML := estimate.ML - estimate.truth]
+dt.sim.lvmestimate[, bias.MLcorrected := estimate.MLcorrected - estimate.truth]
 
 dtL.sim.lvmestimate <- melt(dt.sim.lvmestimate,
                        id.vars = c("n","rep","seed","iFile","type","name"),
@@ -320,6 +320,17 @@ dtLS.sim.IV1type1 <- dtL.sim.IV1type1[,.(n.rep=.N,
                                          ), by = c("n","estimator","link")]
 
 dcast(dtLS.sim.IV1type1, formula = link+n ~ estimator, value.var = "type1")[n==20]
+##           link  n         IV   IVlavaan         ML   robustML   robustMLC
+##  1:         Y2 20 0.08252057 0.06555848 0.06666101 0.06555848 0.030449534
+##  2:  Y2~Gene1Y 20 0.07836485 0.26291239 0.10185735 0.09100161 0.060385039
+##  3:     Y2~eta 20 0.26104656 0.08514969 0.11271309 0.09244339 0.041991856
+##  4:         Y3 20 0.06852684 0.23416165 0.04333814 0.05207362 0.019000763
+##  5:     Y3~eta 20 0.29191756 0.07047748 0.10949029 0.09235858 0.043858161
+##  6:         Y4 20 0.06666101 0.05809516 0.05410907 0.05207362 0.024092297
+##  7:     Y4~eta 20 0.06810279 0.08243576 0.05292172 0.04393181 0.008398371
+##  8:        eta 20 0.09363074 0.06827241 0.08489526 0.08243576 0.058529137
+##  9:    eta~Age 20 0.09354592 0.06216606 0.10516496 0.09625986 0.049796403
+## 10: eta~Gene2Y 20 0.08667628 0.05334577 0.07624459 0.07649902 0.043688497
 dcast(dtLS.sim.IV1type1, formula = link+n ~ estimator, value.var = "type1")[n==100]
 
 
@@ -335,6 +346,12 @@ dtLS.sim.IV2type1 <- dtL.sim.IV2type1[,.(n.rep=.N,
                                          ), by = c("n","estimator","link")]
 
 dcast(dtLS.sim.IV2type1, formula = link+n ~ estimator, value.var = "type1")[n==20]
+## 1:  Y2~Gene1Y 20 0.07987672 0.06908951 0.11506357 0.10491845 0.07538205
+## 2:     Y2~eta 20 0.31616797 0.04777193 0.15718505 0.11121099 0.04985224
+## 3:     Y3~eta 20 0.36355464 0.07050212 0.15474509 0.10748684 0.04933830
+## 4:     Y4~eta 20 0.07923462 0.08552716 0.04558880 0.04494671 0.00424001
+## 5:    eta~Age 20 0.10106588 0.27276230 0.12109927 0.09965327 0.05139406
+## 6: eta~Gene2Y 20 0.09284705 0.32798253 0.06960318 0.05753178 0.04188616
 
 
 ## ** type 1 error with correlated residuals 
@@ -346,7 +363,8 @@ dtLS.sim.IV3type1 <- dtL.sim.IV3type1[,.(n.rep=.N,
                                          type1=mean(p.value<=0.05,na.rm=TRUE)
                                          ), by = c("n","estimator","link")]
 
-dcast(dtLS.sim.IV3type1, formula = link+n ~ estimator, value.var = "type1")[n==1000]
+dcast(dtLS.sim.IV3type1, formula = link+n ~ estimator, value.var = "type1")[n==20]
+## dcast(dtLS.sim.IV3type1, formula = link+n ~ estimator, value.var = "type1")[n==50]
 ##           link    n      IV IVlavaan      ML robustML robustMLC
 ##  1:         Y2 1000 0.05040  0.05035 0.05305  0.04980   0.04980
 ##  2:  Y2~Gene1Y 1000 0.05040  0.05155 0.06070  0.05015   0.05030
@@ -364,4 +382,5 @@ dcast(dtLS.sim.IV3type1, formula = link+n ~ estimator, value.var = "type1")[n==2
 ## ** export
 saveRDS(dtLS.sim.Comptype1, file = file.path(path.results,"type1error-simulation-comparison.rds"))
 saveRDS(dtLS.sim.IV1type1, file = file.path(path.results,"type1error-simulation-IV1.rds"))
+saveRDS(dtLS.sim.IV2type1, file = file.path(path.results,"type1error-simulation-IV2.rds"))
 saveRDS(dtLS.sim.IV3type1, file = file.path(path.results,"type1error-simulation-IV3.rds"))

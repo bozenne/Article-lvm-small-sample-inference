@@ -16,8 +16,8 @@ R CMD BATCH BATCH_simulation-lvm.R output/simulation-lvm/$JOB_NAME-I-$SGE_TASK_I
 ## clean results      ## rm -r ./Results/simulation-lvm/*
 ## submission command ## qsub SUBM_simulation-lvm.sh
 
-## submission output  ## Your job-array 11470.1-40:1 ("simulation-lvm") has been submitted
-## submission time    ## 02/18/19 2:47 
+## submission output  ## Your job-array 11569.1-40:1 ("simulation-lvm") has been submitted
+## submission time    ## 03/07/19 11:30 
      # user    system   elapsed 
 	 # 34005.412   140.796 44826.707
 	 

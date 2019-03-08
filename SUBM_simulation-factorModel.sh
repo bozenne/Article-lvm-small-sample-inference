@@ -16,8 +16,8 @@ R CMD BATCH BATCH_simulation-factorModel.R output/simulation-factorModel/$JOB_NA
 ## clean results      ## rm -r ./Results/simulation-factorModel/*
 ## submission command ## qsub SUBM_simulation-factorModel.sh
 
-## submission output  ## Your job-array 11469.1-40:1 ("simulation-factorModel") has been submitted
-## submission time    ## 02/18/19 2:47 
+## submission output  ## Your job-array 11570.1-40:1 ("simulation-factorModel") has been submitted
+## submission time    ## 03/07/19 11:31 
      # user    system   elapsed 
 	 # 7681.191    64.141 12260.900
 	 

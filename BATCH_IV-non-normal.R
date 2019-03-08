@@ -84,22 +84,18 @@ dt.res <- NULL
 ## paste(names(coef(e.LM)),collapse=",")
 keep.coef <- c("eta","Y2","Y3","Y4","Y2~Gene1Y","eta~Age","eta~Gene2Y","Y2~eta","Y3~eta","Y4~eta")
 keep.type <- c("alpha","nu","nu","nu","K","Gamma","Gamma","Lambda","Lambda","Lambda")
-null <- c("Y2" = 0,
-          "Y2~Gene1Y" = 0,
-          "Y2~eta" = 1,
-          "Y3" = 0,
-          "Y3~eta" = 1,
-          "Y4" = 0,
-          "Y4~eta" = 0,
-          "eta" = 0,
-          "eta~Age" = 1,
-          "eta~Gene2Y" = 0,
-          "Y1~~Y1" = 1,  
-          "eta~~eta" = 1,
-          "Y2~~Y2" = 1,
-          "Y3~~Y3" = 1,
-          "Y4~~Y4" = 1   
-          )
+df.null <- rbind(data.frame(lava.name = "eta", lavaan.name = "eta~1", type = "alpha", null = 0, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y2", lavaan.name = "Y2~1", type = "nu", null = 0, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y3", lavaan.name = "Y3~1", type = "nu", null = 0, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y4", lavaan.name = "Y4~1", type = "nu", null = 0, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "eta~Age", lavaan.name = "eta~Age", type = "Gamma", null = 1, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "eta~Gene2Y", lavaan.name = "eta~Gene2num", type = "Gamma", null = 0, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y2~eta", lavaan.name = "Y2~eta", type = "Lambda", null = 1, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y2~Gene1Y", lavaan.name = "Y2~Gene1num", type = "K", null = 0, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y3~eta", lavaan.name = "Y3~eta", type = "Lambda", null = 1, stringsAsFactors = FALSE),
+                 data.frame(lava.name = "Y4~eta", lavaan.name = "Y4~eta", type = "Lambda", null = 0, stringsAsFactors = FALSE)
+                 )
+
 
 for(iN in 1:length(seqN)){ ## iN <- 1
     
@@ -129,81 +125,78 @@ for(iN in 1:length(seqN)){ ## iN <- 1
         p.testNorm <- max(apply(residuals(e.ML),2,function(x){shapiro.test(x)$p.value}))
 
         ## ML estimates
-        eS.ML <- summary(e.ML)$coef
-        eS.ML[names(null),"Z-value"] <- (eS.ML[names(null),"Estimate"]-null)/eS.ML[names(null),"Std. Error"]
-        eS.ML[names(null),"P-value"] <- 2*(1-pnorm(abs(eS.ML[names(null),"Z-value"])))
+        eS.ML <- summary(e.ML)$coef[df.null$lava.name,]
+        eS.ML[,"Z-value"] <- (eS.ML[,"Estimate"]-df.null$null)/eS.ML[,"Std. Error"]
+        eS.ML[,"P-value"] <- 2*(1-pnorm(abs(eS.ML[,"Z-value"])))
         
         ## ML robust estimates
-        eS.robustML <- cbind(estimate(e.ML)$coefmat, "Z-value" = NA)
-        eS.robustML[names(null),"Z-value"] <- (eS.robustML[names(null),"Estimate"]-null)/eS.robustML[names(null),"Std.Err"]
-        eS.robustML[names(null),"P-value"] <- 2*(1-pnorm(abs(eS.robustML[names(null),"Z-value"])))
+        eS.robustML <- cbind(estimate(e.ML)$coefmat, "Z-value" = NA)[df.null$lava.name,]
+        eS.robustML[,"Z-value"] <- (eS.robustML[,"Estimate"]-df.null$null)/eS.robustML[,"Std.Err"]
+        eS.robustML[,"P-value"] <- 2*(1-pnorm(abs(eS.robustML[,"Z-value"])))
 
         ## corrected ML robust estimates
         if(seqN[iN]<200){
-            eS.robustMLC <- summary2(e.ML, robust = TRUE)$coef
-            eS.robustMLC[names(null),"t-value"] <- (eS.robustMLC[names(null),"Estimate"]-null)/eS.robustMLC[names(null),"robust SE"]
-            eS.robustMLC[names(null),"P-value"] <- 2*(1-pt(abs(eS.robustMLC[names(null),"t-value"]), df = eS.robustMLC[names(null),"df"]))
+            eS.robustMLC <- summary2(e.ML, robust = TRUE)$coef[df.null$lava.name,]
+            eS.robustMLC[,"t-value"] <- (eS.robustMLC[,"Estimate"]-df.null$null)/eS.robustMLC[,"robust SE"]
+            eS.robustMLC[,"P-value"] <- 2*(1-pt(abs(eS.robustMLC[,"t-value"]), df = eS.robustMLC[,"df"]))
         }else{
             eS.robustMLC <- eS.robustML
             eS.robustMLC[] <- NA
         }
         
         ## IV estimates
-        eS.IV <- summary(e.IV)$coef
-        eS.IV[names(null),"Z-value"] <- (eS.IV[names(null),"Estimate"]-null)/eS.IV[names(null),"Std. Error"]
-        eS.IV[names(null),"P-value"] <- 2*(1-pnorm(abs(eS.IV[names(null),"Z-value"])))
+        eS.IV <- summary(e.IV)$coef[df.null$lava.name,]
+        eS.IV[,"Z-value"] <- (eS.IV[,"Estimate"]-df.null$null)/eS.IV[,"Std. Error"]
+        eS.IV[,"P-value"] <- 2*(1-pnorm(abs(eS.IV[,"Z-value"])))
 
-        eS.IVlavaan <- cbind("Estimate" = c(coef(e.IVlavaan), rep(NA, 5)),
-                             "Std. Error" = c(sqrt(diag(e.IVlavaan$coefCov)), rep(NA,5)),
+        eS.IVlavaan <- cbind("Estimate" = coef(e.IVlavaan)[df.null$lavaan.name],
+                             "Std. Error" = sqrt(diag(e.IVlavaan$coefCov))[df.null$lavaan.name],
                              "Z-value" = NA,
                              "P-value" = NA)
-        eS.IVlavaan[,"Z-value"] <- (eS.IVlavaan[,"Estimate"]-null)/eS.IVlavaan[,"Std. Error"]
+        eS.IVlavaan[,"Z-value"] <- (eS.IVlavaan[,"Estimate"]-df.null$null)/eS.IVlavaan[,"Std. Error"]
         eS.IVlavaan[,"P-value"] <- 2*(1-pnorm(abs(eS.IVlavaan[,"Z-value"])))
-        
-
         
         ## if(p.testNorm>0.05){browser()}
         ## qqtest::qqtest(residuals(e.ML)[,4])
         iDT.ML <- data.table(seed = iSeed,
                              n = seqN[iN],
                              rep = iRep,
-                             link = keep.coef,
-                             type = keep.type,
-                             estimate = eS.ML[keep.coef,"Estimate"],
-                             p.value = eS.ML[keep.coef,"P-value"],
+                             link = df.null$lava.name,
+                             type = df.null$type,
+                             estimate = eS.ML[,"Estimate"],
+                             p.value = eS.ML[,"P-value"],
                              estimator = "ML")
         iDT.robustML <- data.table(seed = iSeed,
                                    n = seqN[iN],
                                    rep = iRep,
-                                   link = keep.coef,
-                                   type = keep.type,
-                                   estimate = eS.robustML[keep.coef,"Estimate"],
-                                   p.value = eS.robustML[keep.coef,"P-value"],
+                                   link = df.null$lava.name,
+                                   type = df.null$type,
+                                   estimate = eS.robustML[,"Estimate"],
+                                   p.value = eS.robustML[,"P-value"],
                                    estimator = "robustML")
         iDT.robustMLC <- data.table(seed = iSeed,
                                     n = seqN[iN],
                                     rep = iRep,
-                                    link = keep.coef,
-                                    type = keep.type,
-                                    estimate = eS.robustMLC[keep.coef,"Estimate"],
-                                    p.value = eS.robustMLC[keep.coef,"P-value"],
+                                    link = df.null$lava.name,
+                                    type = df.null$type,
+                                    estimate = eS.robustMLC[,"Estimate"],
+                                    p.value = eS.robustMLC[,"P-value"],
                                     estimator = "robustMLC")
-
         iDT.IV <- data.table(seed = iSeed,
                              n = seqN[iN],
                              rep = iRep,
-                             link = keep.coef,
-                             type = keep.type,
-                             estimate = eS.IV[keep.coef,"Estimate"],
-                             p.value = eS.IV[keep.coef,"P-value"],
+                             link = df.null$lava.name,
+                             type = df.null$type,
+                             estimate = eS.IV[,"Estimate"],
+                             p.value = eS.IV[,"P-value"],
                              estimator = "IV")
         iDT.IVlavaan <- data.table(seed = iSeed,
                                    n = seqN[iN],
                                    rep = iRep,
-                                   link = keep.coef,
-                                   type = keep.type,
-                                   estimate = eS.IVlavaan[1:length(keep.coef),"Estimate"],
-                                   p.value = eS.IVlavaan[1:length(keep.coef),"P-value"],
+                                   link = df.null$lava.name,
+                                   type = df.null$type,
+                                   estimate = eS.IVlavaan[,"Estimate"],
+                                   p.value = eS.IVlavaan[,"P-value"],
                                    estimator = "IVlavaan")
         iDT <- rbind(iDT.ML,
                      iDT.robustML,

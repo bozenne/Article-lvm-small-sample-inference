@@ -16,8 +16,8 @@ R CMD BATCH BATCH_IV-non-normal3.R output/IV-non-normal3/$JOB_NAME-I-$SGE_TASK_I
 ## clean results      ## rm -r ./Results/IV-non-normal3/*
 ## submission command ## qsub SUBM_IV-non-normal3.sh
 
-## submission output  ## Your job-array 11439.1-40:1 ("IV-non-normal3") has been submitted
-## submission time    ## 02/12/19 1:32 
+## submission output  ## Your job-array 11516.1-40:1 ("IV-non-normal3") has been submitted
+## submission time    ## 03/04/19 7:14 
 
 ## documentation      ## https://ifsv.sund.ku.dk/biostat/biostatwiki/index.php/IT:Cluster : biostat wiki about the cluster
                       ## http://gridscheduler.sourceforge.net/htmlman/manuals.html : grid engine manual 

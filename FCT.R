@@ -3,9 +3,9 @@
 ## Author: Brice Ozenne
 ## Created: jan 17 2019 (14:14) 
 ## Version: 
-## Last-Updated: feb  8 2019 (17:24) 
+## Last-Updated: mar  7 2019 (14:25) 
 ##           By: Brice Ozenne
-##     Update #: 83
+##     Update #: 109
 ##----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -219,24 +219,33 @@ groupFigures <- function(figure1, figure2, figure3, reduce.x = TRUE){
 
 }
 
-######################################################################
-### FCT.R ends here
 
 ## * createTable
 createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
 
+    reformat <- function(value, digit){ ## value <- 0 ; digit = 2
+        value.round <- round(value, digits = digit)
+        vec <- format(value.round, nsmall = digit)
+        if(any(value.round==0)){
+            vec[value.round==0] <- paste0("<0.",paste(rep(0,digit-1), collapse=""),"1",sep="")
+        }
+        return(vec)
+    }
+    ## reformat(0, digit = 2)
+
+
+    
     tab1 <- dt[(corrected == FALSE) & (type %in% seqType),
-               .("mean (sd)"=paste0(format(mean, digits = digit)," (",format(sd, digits = digit),")"),
-                 "median [Q1;Q3]"=paste0(format(middle, digits = digit)," [",format(lower, digits = digit),";",format(upper, digits = digit),"]")),
+               .("mean (sd)"=paste0(reformat(mean, digit = digit)," (",reformat(sd, digit = digit),")"),
+                 "median [Q1;Q3]"=paste0(reformat(middle, digit = digit)," [",reformat(lower, digit = digit),";",reformat(upper, digit = digit),"]")),
                by = c("n","type") ]
     ## convert n to character without warning
     tab1[, "sample size" := as.character(n)]
     ## put sample size firt column
     setcolorder(tab1, c("sample size",setdiff(names(tab1),"sample size")))
-
     tab2 <- dt[(corrected == TRUE) & (type %in% seqType),
-               .("mean (sd)"=paste0(format(mean, digits = digit)," (",format(sd, digits = digit),")"),
-                 "median [Q1;Q3]"=paste0(format(middle, digits = digit)," [",format(lower, digits = digit),";",format(upper, digits = digit),"]")),
+               .("mean (sd)"=paste0(reformat(mean, digit = digit)," (",reformat(sd, digit = digit),")"),
+                 "median [Q1;Q3]"=paste0(reformat(middle, digit = digit)," [",reformat(lower, digit = digit),";",reformat(upper, digit = digit),"]")),
                by = c("n","type") ]
 
     n.n <- length(seqN)
@@ -282,8 +291,8 @@ createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
 }
 
 ## * fitStudent
-fitStudent <- function(data, seqLink = NULL, trace = TRUE,
-                       quantile.min = 0, quantile.max = 1){
+fitStudent <- function(data, robust, seqLink = NULL, trace = TRUE,
+                       quantile.min = 0, quantile.max = 1, value.max = Inf){
 
     if(is.null(seqLink)){
         seqLink <- unique(data$name)
@@ -292,6 +301,15 @@ fitStudent <- function(data, seqLink = NULL, trace = TRUE,
         stop("Unknown link(s): \"",paste(txt, collapse = "\" \""),"\"\n")
     }
 
+    if(robust){
+        data$wald <- data[["estimate.MLcorrected"]]/data[["se.robustMLcorrected"]]
+        data$wald.df <- data[["df.robustMLcorrected"]]
+    }else{
+        data$wald <- data[["estimate.MLcorrected"]]/data[["se.MLcorrected"]]
+        data$wald.df <- data[["df.MLcorrected"]]
+    }
+    data <- data[!is.na(wald) & !is.na(wald.df)]
+    
     n.link <- length(seqLink)
     M.dist <- matrix(nrow = n.link, ncol = 10,
                      dimnames = list(seqLink, c("se.empirical","df.empirical","mean.se","mean.df","Etype1","zdist.ksD","zdist.ksP","tdist.ksD","tdist.ksP","empirical.cv")))
@@ -300,27 +318,27 @@ fitStudent <- function(data, seqLink = NULL, trace = TRUE,
     for(iIndex in 1:n.link){ ## iLink <- 1
         iLink <- seqLink[iIndex]
         iData <- data[name == iLink]
-        iMin <- quantile(iData$estimate.MLcorrected, probs = quantile.min)
-        iMax <- quantile(iData$estimate.MLcorrected, probs = quantile.max)
+
+        iMin <- quantile(iData$wald, probs = quantile.min)
+        iMax <- quantile(iData$wald, probs = quantile.max)
 
         if(trace>0){setTxtProgressBar(pb, iIndex)}
-        M.dist[iLink, "mean.se"] <- iData[, mean(se.MLcorrected, na.rm = TRUE)]
-        M.dist[iLink, "mean.df"] <- iData[, mean(df.MLcorrected, na.rm = TRUE)]
+        M.dist[iLink, "mean.se"] <- 1
+        M.dist[iLink, "mean.df"] <- mean(iData$wald.df)
 
-        iData2 <- iData[estimate.MLcorrected >= iMin & estimate.MLcorrected <= iMax]
-        iFitted <- try(QRM_fit.st(iData2$estimate.MLcorrected), silent = FALSE)
-
+        iData2 <- iData[wald >= iMin & wald <= iMax & abs(wald)<value.max]
+        iFitted <- try(QRM_fit.st(iData2$wald), silent = FALSE)
 
         if(!inherits(iFitted, "try-error") && iFitted$converged ){
             M.dist[iLink,"empirical.cv"] <- iFitted$converged
             M.dist[iLink,"se.empirical"] <- iFitted$par.est["sigma"]
             M.dist[iLink,"df.empirical"] <- iFitted$par.est["df"]
 
-            iKS.z <- ks.test(iData2$estimate.MLcorrected, y = pnorm, mean = mean(iData2$estimate.MLcorrected), sd = sd(iData2$estimate.MLcorrected))
+            iKS.z <- ks.test(iData2$wald, y = pnorm, mean = mean(iData2$wald), sd = sd(iData2$wald))
             M.dist[iLink,"zdist.ksD"] <- as.double(iKS.z$statistic)
             M.dist[iLink,"zdist.ksP"] <- as.double(iKS.z$p.value)
             
-            iX.norm <- (iData2$estimate.MLcorrected - iFitted$par.est["mean"])/iFitted$par.est["sigma"]
+            iX.norm <- (iData2$wald - iFitted$par.est["mean"])/iFitted$par.est["sigma"]
             iKS.t <- ks.test(iX.norm, y = pt, df = iFitted$par.est["df"])
             M.dist[iLink,"tdist.ksD"] <- as.double(iKS.t$statistic)
             M.dist[iLink,"tdist.ksP"] <- as.double(iKS.t$p.value)
@@ -395,3 +413,6 @@ QRM_fit.st <- function (data, ...)
                 ll.max = loglh.max)
     return(out)
 }
+
+######################################################################
+### FCT.R ends here

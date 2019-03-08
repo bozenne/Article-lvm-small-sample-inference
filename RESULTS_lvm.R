@@ -95,7 +95,7 @@ e.memory <- estimate(m.memory, data = dtG.memory,
 ## summary(e.memory)
 
 ## coefficients
-memory.null <- c( c('m.pos~u', 'm.neg~u', 'm.neu~u'))
+memory.null <- c( c('m.pos~u', 'm.neu~u', 'm.neg~u'))
 coef.memory.ML <- coef(e.memory)
 
 ## * Simulation study (section 7.3)
@@ -118,7 +118,7 @@ c(nrow = NROW(dtG.memory), id = length(unique(dtG.memory$cimbi.id)))
 summary(e.memory)$coef[memory.null,]
 
 ## type 1 error from the simulation
-dttype1.ill.lvm[method == "p.Ztest",.(link,type1)]
+dttype1.ill.lvm[method == "p.Ztest",.(link,type1)][match(link,memory.null)]
 
 ## corrected ML estimates
 sCorrect(e.memory) <- TRUE
@@ -144,14 +144,5 @@ cbind(pvalue = summary(e.memory)$coef[memory.null,"P-value"],
 
 ## type 1 error found in the simulation
 cbind(dttype1.ill.lvm[method == "p.KR",.(link,type1MLc = type1)],
-      dttype1.ill.lvm[method == "p.Ztest",.(typeML=type1)])
+      dttype1.ill.lvm[method == "p.Ztest",.(typeML=type1)])[match(link,memory.null)]
 
-## * Appendix E - table 3
-
-## chunk 64
-table3 <- createTable(dtSS.bias.lvm, 
-                      seqN = c(20,30,50,100), 
-                      digit = 3, 
-                      seqType = c("Sigma_var","Sigma_cov","Psi_var"),
-                      convert2latex = FALSE)
-table3

@@ -16,8 +16,8 @@ R CMD BATCH BATCH_simulation-mixedModel.R output/simulation-mixedModel/$JOB_NAME
 ## clean results      ## rm -r ./Results/simulation-mixedModel/*
 ## submission command ## qsub SUBM_simulation-mixedModel.sh
 
-## submission output  ## Your job-array 11468.1-40:1 ("simulation-mixedModel") has been submitted
-## submission time    ## 02/18/19 2:46 
+## submission output  ## Your job-array 11568.1-40:1 ("simulation-mixedModel") has been submitted
+## submission time    ## 03/07/19 11:30 
 ## duration
 #     user   system  elapsed 
 # 5723.226   25.610 9166.588 

@@ -16,8 +16,8 @@ R CMD BATCH BATCH_illustration-lvm.R output/illustration-lvm/$JOB_NAME-I-$SGE_TA
 ## clean results      ## rm -r ./Results/illustration-lvm/*
 ## submission command ## qsub SUBM_illustration-lvm.sh
 
-## submission output  ## Your job-array 11282.1-40:1 ("illustration-lvm") has been submitted
-## submission time    ## 02/05/19 2:13 
+## submission output  ## Your job-array 11572.1-40:1 ("illustration-lvm") has been submitted
+## submission time    ## 03/07/19 11:31 
      # user    system   elapsed 
 	 # 24754.220   160.062 24978.706
 	 

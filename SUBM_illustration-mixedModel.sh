@@ -16,8 +16,8 @@ R CMD BATCH BATCH_illustration-mixedModel.R output/illustration-mixedModel/$JOB_
 ## clean results      ## rm -r ./Results/illustration-mixedModel/*
 ## submission command ## qsub SUBM_illustration-mixedModel.sh
 
-## submission output  ## Your job-array 11186.1-40:1 ("illustration-mixedModel") has been submitted
-## submission time    ## 01/31/19 3:52 
+## submission output  ## Your job-array 11571.1-40:1 ("illustration-mixedModel") has been submitted
+## submission time    ## 03/07/19 11:31 
 #    user  system elapsed 
 # 748.370   3.610 754.717
 

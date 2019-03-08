@@ -127,21 +127,31 @@ row.ML <- c("residual variance" = as.double(coef.vitamin.ML["w1~~w1"]),
             "variance random intercept" = as.double(coef.vitamin.ML["eta~~eta"]),
             "statistic" = as.double(Ftest.vitamin.ML[["statistic"]])/3,
             "degree of freedom" = Inf,
-            "p-value" = Ftest.vitamin.ML[["p.value"]])
+            "p-value" = as.double(Ftest.vitamin.ML[["p.value"]]))
 row.correctedML <- c("residual variance" = as.double(coef.vitamin.MLc["w1~~w1"]),
                      "variance random intercept" = as.double(coef.vitamin.MLc["eta~~eta"]),
                      "statistic" = as.double(Ftest.vitamin.MLc[["statistic"]]),
                      "degree of freedom" = as.double(Ftest.vitamin.MLc[["parameter"]]),
-                     "p-value" = Ftest.vitamin.MLc[["p.value"]])
+                     "p-value" = as.double(Ftest.vitamin.MLc[["p.value"]]))
 row.REML <- c("residual variance" = as.double(coef.vitamin.REML["sigma2"]),
               "variance random intercept" = as.double(coef.vitamin.REML["tau"]),
               "statistic" = as.double(Ftest.vitamin.REML[["F value"]][2]),
               "degree of freedom" = as.double(Ftest.vitamin.REML[["DenDF"]][2]),
-              "p-value" = Ftest.vitamin.REML[["Pr(>F)"]][2])
+              "p-value" = as.double(Ftest.vitamin.REML[["Pr(>F)"]][2]))
 M <- cbind("ML" = row.ML, 
-      "ML with correction" = row.correctedML,
-      "REML" = row.REML)
-print(M, digit = 3)
+           "ML with correction" = row.correctedML,
+           "REML" = row.REML)
+M.txt <- rbind(format(M[1:3,], digits = 3, nsmall = 3),
+               format(M[4,,drop=FALSE], digits = 2, nsmall = 2),
+               format(M[5,,drop=FALSE], digits = 2, nsmall = 2))
+M.txt[is.infinite(M)] <- "$\\infty$"
+
+print(xtable::xtable(M.txt,
+                     label = "tab:mixed"),
+      include.colnames = TRUE,
+      include.rownames = TRUE,
+      sanitize.text.function = function(x){x},
+      booktabs = TRUE)
 
 ## ** figure (Appendix A.1)
 

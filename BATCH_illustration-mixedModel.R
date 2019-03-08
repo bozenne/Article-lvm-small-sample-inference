@@ -132,12 +132,15 @@ true.coef <- c("w1" = -1.20756,
                "eta~~eta" = 0.348873)
 
 ## * simulation
+## n.rep <- 10
 out <- calibrateType1(m.fit, true.coef = true.coef,
                       param = c("w5~grp","w6~grp","w7~grp"), F.test = TRUE,
                       n = seqN, n.rep = n.rep,
                       generative.object = m.generative, generative.coef = generative.coef,
                       dir.save = path.res, label.file = iter_sim,
                       bootstrap = FALSE, seed = NULL, trace = 2)
+
+## out$p.value
 
 ## * display
 print(sessionInfo())

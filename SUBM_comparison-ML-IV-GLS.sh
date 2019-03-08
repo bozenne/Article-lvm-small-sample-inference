@@ -16,8 +16,8 @@ R CMD BATCH BATCH_comparison-ML-IV-GLS.R output/comparison-ML-IV-GLS/$JOB_NAME-I
 ## clean results      ## rm -r ./Results/comparison-ML-IV-GLS/*
 ## submission command ## qsub SUBM_comparison-ML-IV-GLS.sh
 
-## submission output  ## Your job-array 11388.1-40:1 ("comparison-ML-IV-GLS") has been submitted
-## submission time    ## 02/08/19 10:38 
+## submission output  ## Your job-array 11521.1-40:1 ("comparison-ML-IV-GLS") has been submitted
+## submission time    ## 03/04/19 7:16 
 #     user   system  elapsed 
 # 9554.332   96.733 8283.346 
 

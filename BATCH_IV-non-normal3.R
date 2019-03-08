@@ -163,6 +163,17 @@ for(iN in 1:length(seqN)){ ## iN <- 1
             eS.robustMLC <- eS.robustML
             eS.robustMLC[] <- NA
         }
+        
+        ## corrected ML robust estimates 2
+        if(seqN[iN]<200){
+            eS.robustMLC2 <- summary2(e.ML, cluster = iD$id, robust = TRUE, df = 3)$coef[df.null$lava.name,]
+            eS.robustMLC2[,"t-value"] <- (eS.robustMLC2[,"Estimate"]-df.null$null)/eS.robustMLC2[,"robust SE"]
+            eS.robustMLC2[,"P-value"] <- 2*(1-pt(abs(eS.robustMLC2[,"t-value"]), df = eS.robustMLC2[,"df"]))
+        }else{
+            eS.robustMLC2 <- eS.robustML
+            eS.robustMLC2[] <- NA
+        }
+
         ## IV estimates
         eS.IV <- summary(e.IV)$coef[df.null$lava.name,]
         eS.IV[,"Z-value"] <- (eS.IV[,"Estimate"]-df.null$null)/eS.IV[,"Std. Error"]
@@ -203,6 +214,14 @@ for(iN in 1:length(seqN)){ ## iN <- 1
                                     estimate = eS.robustMLC[,"Estimate"],
                                     p.value = eS.robustMLC[,"P-value"],
                                     estimator = "robustMLC")
+        iDT.robustMLC2 <- data.table(seed = iSeed,
+                                    n = seqN[iN],
+                                    rep = iRep,
+                                    link = df.null$lava.name,
+                                    type = df.null$type,
+                                    estimate = eS.robustMLC2[,"Estimate"],
+                                    p.value = eS.robustMLC2[,"P-value"],
+                                    estimator = "robustMLC2")
         iDT.IV <- data.table(seed = iSeed,
                              n = seqN[iN],
                              rep = iRep,
@@ -222,6 +241,7 @@ for(iN in 1:length(seqN)){ ## iN <- 1
         iDT <- rbind(iDT.ML,
                      iDT.robustML,
                      iDT.robustMLC,
+                     iDT.robustMLC2,
                      iDT.IV,
                      iDT.IVlavaan)
 

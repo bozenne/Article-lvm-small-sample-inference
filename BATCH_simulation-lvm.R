@@ -123,6 +123,16 @@ out <- calibrateType1(m.fit, true.coef = true.coef,
                       dir.save = path.res, label.file = iter_sim,
                       bootstrap = FALSE, seed = NULL, trace = 2)
 
+if(FALSE){
+    dd <- lava::sim(m.fit, n = 50, p = true.coef)
+    e <- estimate(m.fit, data = dd)
+    resManual <- sCorrect(e, numeric.derivative = FALSE, adjust.n = FALSE, adjust.Omega = FALSE)
+    resAuto <- sCorrect(e, numeric.derivative = TRUE, adjust.n = FALSE, adjust.Omega = FALSE)
+    ## resManual$Omega - resAuto$Omega
+    range(resManual$dVcov.param - resAuto$dVcov.param)
+    ## lavaSearch2:::sCorrect.lvmfit
+}
+
 ## * display
 print(sessionInfo())
 

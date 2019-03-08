@@ -89,6 +89,8 @@ out <- calibrateType1(m.fit, true.coef = true.coef,
                       dir.save = path.res, label.file = iter_sim,
                       bootstrap = FALSE, seed = NULL, trace = 2)
 
+## summary(out)
+
 ## * display
 print(sessionInfo())
 
