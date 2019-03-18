@@ -3,8 +3,6 @@ presented in the article: "Small Sample Maximum Likelihood Inference
 in Latent Variable Models". It is organized as follows:
 - the "BATCH_" files define the simulation studies. The output of the
   simulation studies are not save in the directory to save space.
-- the "SUBM_" files define the simulation studies. The output of the
-  simulation studies are not save in the directory to save space.
 - the "BUILD_simulation.R" file collects the results from the
   simulation studies and save them into data.table objects in the
   folder Results.
