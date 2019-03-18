@@ -13,11 +13,7 @@ path.simulation.lvm <- "./Results/simulation-lvm"
 
 
 ## * load data
-dist.simulation <- try(readRDS(file.path(path.results,"dist-simulation.rds")), silent = TRUE)
-if(inherits(dist.simulation, "try-error")){
-    stop("data not stored on Github - would require too much space \n",
-	 " - contact the corresponding author of the paper for more information \n")
-}
+dist.simulation <- readRDS(file.path(path.results,"dist-simulation.rds"))
 
 ## * fit distributions
 if(FALSE){ ## check
@@ -95,12 +91,12 @@ df.table1 <- rbind(cbind(scenario = "a", parameter = greek$a, as.data.frame(chec
 
 df.table1$scenario <- as.character(df.table1$scenario)
 rownames(df.table1) <- NULL
-df.table1$se.empirical <- as.character(round(df.table1$se.empirical, digits = 3))
-df.table1$df.empirical <- as.character(round(df.table1$df.empirical, digits = 1))
-df.table1$mean.se <- as.character(round(df.table1$mean.se, digits = 3))
-df.table1$mean.df <- as.character(round(df.table1$mean.df, digits = 1))
-df.table1$Etype1 <- as.character(round(df.table1$Etype1, digits = 3))
-df.table1$tdist.ksD <- as.character(round(df.table1$tdist.ksD, digits = 3))
+df.table1$se.empirical <- formatC(round(df.table1$se.empirical, digits = 3), format = "f", digits = 3)
+df.table1$df.empirical <- formatC(round(df.table1$df.empirical, digits = 1), format = "f", digits = 1)
+df.table1$mean.se <- formatC(round(df.table1$mean.se, digits = 3), format = "f", digits = 0)
+df.table1$mean.df <- formatC(round(df.table1$mean.df, digits = 1), format = "f", digits = 1)
+df.table1$Etype1 <- formatC(round(df.table1$Etype1, digits = 3), format = "f", digits = 3)
+df.table1$tdist.ksD <- formatC(round(df.table1$tdist.ksD, digits = 3), format = "f", digits = 3)
 df.table1$tdist.ksP <- format.pval(df.table1$tdist.ksP, digits = 3, eps = 1e-3)
 df.table1[duplicated(df.table1$scenario),"scenario"] <- ""
 
@@ -108,13 +104,13 @@ addtorow <- list()
 addtorow$pos <- list(0,0,2,6)
 addtorow$command <- c("&&\\multicolumn{2}{c}{empirical Student} & \\multicolumn{2}{c}{modeled Student} & expected
 & \\multicolumn{2}{c}{KS-test} \\\\ \\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){8-9} \n",
-"scenario & parameter & se & df & se & df & type 1 error & statistic & p-value  \\\\\n",
+"scenario & parameter & dispersion & df & dispersion & df & type 1 error & statistic & p-value  \\\\\n",
 "[4mm] ","[4mm] ")
 print(xtable::xtable(df.table1,
                      label = "tab:validation",
                      caption = paste("Comparison between the empirical distribution of the Wald statistic vs. the modeled distribution (after correction) for n=20. ",
-                                     "Empirical Student: standard error and degree of freedom of a Student's t-distribution fitted on the empirical distribution.",
-                                     "Modeled Student: average estimated degree of freedom over the simulations.",
+                                     "Empirical Student: standard error and degrees of freedom of a non-standardized Student's t-distribution fitted to the empirical distribution.",
+                                     "Modeled Student: average estimated degrees of freedom over the simulations.",
                                      "Expected type 1 error: rejection rate under the empirical Student when using the 2.5 and 97.5\\% quantile of the modeled Student.",
                                      "Kolmogorov Smirnov test: comparison between the empirical cumluative distribution function (cdf) and the cdf of the empirical Student."),
                      ),
@@ -150,8 +146,8 @@ addtorow$command <- c("&&\\multicolumn{2}{c}{empirical Student} & \\multicolumn{
 print(xtable::xtable(df.table2,
                      label = "tab:robustvalidation",
                      caption = paste("Comparison between the empirical distribution of the robust Wald statistic vs. the modeled distribution (after correction) for n=20. ",
-                                     "Empirical Student: standard error and degree of freedom of a Student's t-distribution fitted on the empirical distribution.",
-                                     "Modeled Student: average estimated degree of freedom over the simulations.",
+                                     "Empirical Student: standard error and degrees of freedom of a Student's t-distribution fitted on the empirical distribution.",
+                                     "Modeled Student: average estimated degrees of freedom over the simulations.",
                                      "Expected type 1 error: rejection rate under the empirical Student when using the 2.5 and 97.5\\% quantile of the modeled Student.",
                                      "Kolmogorov Smirnov test: comparison between the empirical cumluative distribution function (cdf) and the cdf of the empirical Student."),
                      ),

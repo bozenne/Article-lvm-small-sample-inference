@@ -86,7 +86,7 @@ dtLS.sim.lvmtype1[link %in% names(greek.label.lvm), link.txt := factor(link,
                                                                        labels = as.character(greek.label.lvm))]
 
 label.statistic <- c( 
-    Ztest = "Gaussian approx.",
+    Ztest = "standard procedure",
     Satt = "Satterthwaite approx.",
     SSC = "bias correction",
     KR = "Satterthwaite approx. with bias correction"
@@ -231,21 +231,31 @@ print(xtable::xtable(table.R1[,.SD,.SDcols = order.col], label = "tab:comparison
 dtLS.sim.IV1type1 <- readRDS(file = file.path("Results","type1error-simulation-IV1.rds"))
 
 dtLS.sim.IV1type1[link %in% names(greek.label.factor2), link.txt := factor(link,
-                                                                            levels = names(greek.label.factor2),
+                                                                           levels = names(greek.label.factor2),
                                                                            labels = as.character(greek.label.factor2))]
 dtLS.sim.IV1type1[estimator == "IV", estimator := "IV (lava)"]
 dtLS.sim.IV1type1[estimator == "IVlavaan", estimator := "IV (lavaan)"]
 dtLS.sim.IV1type1[estimator == "robustML", estimator := "robust ML"]
 dtLS.sim.IV1type1[estimator == "robustMLC", estimator := "corrected robust ML"]
 
-table.R2 <- dcast(dtLS.sim.IV1type1, formula = link.txt+n ~ estimator, value.var = "type1")[n==20]
-
+table.R2 <- dcast(dtLS.sim.IV1type1, formula = link.txt+n ~ estimator, value.var = "type1")[n %in% c(20,100)]
+setkeyv(table.R2, "n")
 names(table.R2)[1] <- "parameter"
-order.col <- c("parameter","robust ML","corrected robust ML","IV (lava)","IV (lavaan)")
-table.R2[,n:=NULL]
+order.col <- c("parameter","n","robust ML","corrected robust ML","IV (lava)","IV (lavaan)")
+table.R2[,n := as.character(n)]
+table.R2[duplicated(n),n := ""]
 
-print(xtable::xtable(table.R2[,.SD,.SDcols = order.col], label = "tab:student", caption = "Type 1 error of Wald tests in a misspecified latent variable model (residuals following a Student's t-distribution) for a sample size of 20.", digits = 3), NA.string="NA",
-      include.rownames = FALSE, booktabs = TRUE, sanitize.text.function = function(x){x})
+addtorow <- list()
+addtorow$pos <- list(0,0,10)
+addtorow$command <- c("\\multirow{2}{*}{parameter} & \\multirow{2}{*}{n} & robust ML & robust ML & IV & IV \\\\",
+                      " & & (uncorrected) & (df=non-robust) &  (lava) &  (lavaan) \\\\",
+                      "[4mm]")
+
+print(xtable::xtable(table.R2[,.SD,.SDcols = order.col], label = "tab:student", caption = "Type 1 error of Wald tests in a misspecified latent variable model (residuals following a Student's t-distribution).", digits = 3), NA.string="NA",
+      add.to.row = addtorow,
+      include.colnames = FALSE,
+      include.rownames = FALSE,
+      booktabs = TRUE, sanitize.text.function = function(x){x})
 
 ## ** misspecification correction small samples (misspecified covariance structure)
 dtLS.sim.IV3type1 <- readRDS(file = file.path("Results","type1error-simulation-IV3.rds"))
@@ -262,14 +272,14 @@ dtLS.sim.IV3type1[estimator == "robustMLC2", estimator := "robust ML (df=Pan)"]
 table.R3 <- dcast(dtLS.sim.IV3type1, formula = link.txt+n ~ estimator, value.var = "type1")[n %in% c(20,100)]
 setkeyv(table.R3, "n")
 names(table.R3)[1] <- "parameter"
-order.col <- c("parameter","n","robust ML (uncorrected)","robust ML (df=non-robust)","robust ML (df=Pan)","IV (lava)","IV (lavaan)")
+order.col <- c("parameter","n","robust ML (uncorrected)","robust ML (df=non-robust)","IV (lava)","IV (lavaan)")
 table.R3[,n := as.character(n)]
 table.R3[duplicated(n),n := ""]
 
 addtorow <- list()
 addtorow$pos <- list(0,0,10)
-addtorow$command <- c("\\multirow{2}{*}{parameter} & \\multirow{2}{*}{n} & robust ML & robust ML & robust ML & IV & IV \\\\",
-                      " & & (uncorrected) & (df=non-robust) & (df=Pan) &  (lava) &  (lavaan) \\\\",
+addtorow$command <- c("\\multirow{2}{*}{parameter} & \\multirow{2}{*}{n} & robust ML & robust ML & IV & IV \\\\",
+                      " & & (uncorrected) & (df=non-robust) &  (lava) &  (lavaan) \\\\",
                       "[4mm]")
 
 print(xtable::xtable(table.R3[,.SD,.SDcols = order.col], label = "tab:miscov", caption = "Type 1 error of Wald tests in a misspecified latent variable model (incorrect covariance structure)", digits = 3), NA.string="NA",

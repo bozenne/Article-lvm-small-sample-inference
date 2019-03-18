@@ -314,6 +314,8 @@ cat(" - student \n")
 dtL.sim.IV1type1 <- sinkDirectory(path.simulation.IV1,
                                   string.keep = "type1error", string.exclude = "(tempo)")
 100*mean(dtL.sim.IV1type1$shapiroMax<=1e-3)
+
+## dtL.sim.IV1type1[n==500 & link == "Y3~eta"]
 ## 99.61833
 dtLS.sim.IV1type1 <- dtL.sim.IV1type1[,.(n.rep=.N,
                                          type1=mean(p.value<=0.05,na.rm=TRUE)
