@@ -1,6 +1,3 @@
-## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
-## setwd(path)
-
 library(data.table)
 source("FCT.R") ## get function createTable
 export <- TRUE
@@ -17,13 +14,10 @@ dtLS.sim.lvmbias <- readRDS(file.path(path.results,"bias-simulation-lvmModel.rds
 
 ## * table 1
 table1 <- createTable(dt = dtLS.sim.MMbias, seqN = c(20,30,50,100), seqType = c("Sigma_var","Psi_var"), digit = 3, convert2latex = TRUE)
-dtLS.sim.MMbias[corrected == FALSE & n==20,.(type,mean,middle)]
 cat(table1)
 
 table2 <- createTable(dt = dtLS.sim.factorbias, seqN = c(20,30,50,100), seqType = c("Sigma_var","Psi_var"), digit = 3, convert2latex = TRUE)
-dtLS.sim.factorbias[corrected == FALSE & n==20,.(type,mean,middle)]
 cat(table2)
 
 table3 <- createTable(dt = dtLS.sim.lvmbias, seqN = c(20,30,50,100), seqType = c("Sigma_var","Psi_var","Sigma_cov"), digit = 3, convert2latex = TRUE)
-dtLS.sim.lvmbias[corrected == FALSE & n==20,.(type,mean,middle)]
 cat(table3)

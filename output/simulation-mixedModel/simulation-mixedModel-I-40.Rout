@@ -1,0 +1,261 @@
+
+R version 3.5.2 (2018-12-20) -- "Eggshell Igloo"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+> ## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
+> ## setwd(path)
+> ## source("BATCH_simulation-mixedModel.R")
+> 
+> rm(list = ls())
+> gc()
+         used (Mb) gc trigger (Mb) max used (Mb)
+Ncells 256369 13.7     627928 33.6   418478 22.4
+Vcells 437737  3.4    8388608 64.0  1752525 13.4
+> 
+> ## * seed
+> iter_sim <- as.numeric(Sys.getenv("SGE_TASK_ID"))
+> n.iter_sim <- as.numeric(Sys.getenv("SGE_TASK_LAST"))
+> if(is.na(iter_sim)){iter_sim <- 89}
+> if(is.na(n.iter_sim)){n.iter_sim <- 200}
+> cat("iteration ",iter_sim," over ",n.iter_sim,"\n",sep="")
+iteration 40 over 40
+> 
+> set.seed(1)
+> seqSeed <- sample(1:max(1e5,n.iter_sim),size=n.iter_sim,replace=FALSE)
+> iSeed <- seqSeed[iter_sim]
+> set.seed(iSeed)
+> 
+> cat("seed: ",iSeed,"\n")
+seed:  41112 
+> 
+> ## * path
+> path <- "."
+> path.res <- file.path(path,"Results","simulation-mixedModel")
+> if(dir.exists(path.res)==FALSE){
++     dir.create(path.res)
++ }
+> path.output <- file.path(path,"output","simulation-mixedModel")
+> if(dir.exists(path.output)==FALSE){
++     dir.create(path.output)
++ }
+> 
+> ## * libraries
+> library(lava)
+> library(data.table)
+> ## devtools::load_all("lavaSearch2")
+> library(lavaSearch2)
+Loading required package: ggplot2
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:lava’:
+
+    vars
+
+lavaSearch2 version 1.5.3
+> 
+> ## * settings
+> seqN <- c(20,30,50,75,100,150,200,300,500)
+> n.boot <- 0# 1e3
+> n.rep <- 5e2
+> 
+> ## * model
+> 
+> ## ** generative model
+> m.generative <- lvm(c(Y1[mu1:sigma]~1*eta,
++                       Y2[0:sigma]~1*eta,
++                       Y3[mu3:sigma]~1*eta,
++                       eta~beta1*Age))
+> latent(m.generative) <- ~eta
+> categorical(m.generative, labels = c("N","Y")) <- ~Gene1
+>  
+> ## plot(m)
+> 
+> ## ** investigator model
+> m.fit <- lvm(c(Y1[mu1:sigma]~1*eta,
++                Y2[mu2:sigma]~1*eta,
++                Y3[mu3:sigma]~1*eta,
++                eta~beta1*Age + beta2*Gene1))
+> latent(m.fit) <- ~eta
+> categorical(m.fit, labels = c("N","Y")) <- ~Gene1
+> ## lava::estimate(m.fit, lava::sim(m.generative, n = 1e5))
+> 
+> ## ** true value of the coefficients
+> if(FALSE){ ## create true.coef
++     true.coef <- round(coef(lava::estimate(m.fit, lava::sim(m.generative, n = 1e3))))
++     Mtrue.coef <- cbind(names(true.coef)," = ",as.double(true.coef),",")
++     Mtrue.coef[1,1] <- paste0("c(",Mtrue.coef[1,1])
++     Mtrue.coef[NROW(Mtrue.coef),4] <- ")"
++     Mtrue.coef <- cbind(apply(Mtrue.coef, 1, paste, collapse = ""))
++     print(as.data.table(Mtrue.coef), quote = FALSE, row.names = FALSE)
++ }
+> 
+> true.coef <- c(eta = 0,
++                Y2 = 0,
++                Y3 = 0,
++                "eta~Age" = 1,
++                "eta~Gene1Y" = 0,
++                "Y1~~Y1" = 1,
++                "eta~~eta" = 1)
+> 
+> ## * simulation
+> out <- calibrateType1(m.fit, true.coef = true.coef,
++                       param = names(true.coef[1:5]),
++                       null = true.coef[1:5],
++                       n = seqN, n.rep = n.rep,
++                       generative.object = m.generative,
++                       dir.save = path.res, label.file = iter_sim,
++                       bootstrap = FALSE, seed = NULL, trace = 2)
+  Check true coefficients - done 
+  Settings: 
+  > simulation for n=20 30 50 75 100 150 200 300 500
+  > model: 
+Latent Variable Model
+                                    
+  Y1 ~ eta          gaussian        
+  eta ~ Age+Gene1   gaussian, latent
+  Y2 ~ eta          gaussian        
+  Y3 ~ eta          gaussian        
+
+Exogenous variables:                       
+  Age          gaussian
+  Gene1        binary  
+
+  > expected coefficients: 
+       eta         Y2         Y3    eta~Age eta~Gene1Y     Y1~~Y1   eta~~eta 
+         0          0          0          1          0          1          1 
+  > null hypotheses: 
+       eta         Y2         Y3    eta~Age eta~Gene1Y 
+         0          0          0          1          0 
+
+ Perform simulation: 
+  > export results in  ./Results/simulation-mixedModel 
+Loading required namespace: pbapply
+  > sample size=20
+  > sample size=30
+  > sample size=50
+  > sample size=75
+  > sample size=100
+  > sample size=150
+  > sample size=200
+  > sample size=300
+  > sample size=500
+> 
+> ## summary(out)
+> 
+> ## * display
+> print(sessionInfo())
+R version 3.5.2 (2018-12-20)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: openSUSE 13.1 (Bottle) (x86_64)
+
+Matrix products: default
+BLAS: /usr/local/R-3.5.2/lib/libRblas.so
+LAPACK: /usr/local/R-3.5.2/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_GB.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_GB.UTF-8        LC_COLLATE=en_GB.UTF-8    
+ [5] LC_MONETARY=en_GB.UTF-8    LC_MESSAGES=en_GB.UTF-8   
+ [7] LC_PAPER=en_GB.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_GB.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] lavaSearch2_1.5.3 ggplot2_3.1.0     data.table_1.12.0 lava_1.6.5       
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.0       pillar_1.3.1     compiler_3.5.2   plyr_1.8.4      
+ [5] bindr_0.1.1      tools_3.5.2      tibble_2.0.1     gtable_0.2.0    
+ [9] lattice_0.20-38  pkgconfig_2.0.2  rlang_0.3.1      Matrix_1.2-14   
+[13] parallel_3.5.2   mvtnorm_1.0-10   bindrcpp_0.2.2   stringr_1.3.1   
+[17] withr_2.1.2      dplyr_0.7.5      grid_3.5.2       tidyselect_0.2.4
+[21] glue_1.2.0       R6_2.3.0         pbapply_1.3-4    survival_2.42-6 
+[25] multcomp_1.4-10  TH.data_1.0-10   purrr_0.2.5      reshape2_1.4.3  
+[29] magrittr_1.5     scales_1.0.0     codetools_0.2-15 splines_3.5.2   
+[33] MASS_7.3-50      assertthat_0.2.0 colorspace_1.4-0 sandwich_2.5-0  
+[37] stringi_1.2.2    lazyeval_0.2.1   munsell_0.5.0    crayon_1.3.4    
+[41] zoo_1.8-4       
+> 
+> ## * running time
+> if(FALSE){
++ 
++     ls.data <- lapply(seqN, function(iN){lava::sim(m.generative, n = iN, latent = FALSE)})
++     names(ls.data) <- seqN
++     ls.lvmfit <- lapply(ls.data, function(iData){lava::estimate(m.fit, data = iData)})
++     names(ls.lvmfit) <- seqN
++ 
++     ## algo 2
++     speedMM <- microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]]),
++                                               "30" = sCorrect(ls.lvmfit[["30"]]),
++                                               "50" = sCorrect(ls.lvmfit[["50"]]),
++                                               "75" = sCorrect(ls.lvmfit[["75"]]),
++                                               "100" = sCorrect(ls.lvmfit[["100"]]),
++                                               "150" = sCorrect(ls.lvmfit[["150"]]),
++                                               "200" = sCorrect(ls.lvmfit[["200"]]),
++                                               "300" = sCorrect(ls.lvmfit[["300"]]),
++                                               "500" = sCorrect(ls.lvmfit[["500"]]),
++                                               times = 50
++                                               )
++     saveRDS(speedMM, file = file.path("Results","speed-Algo2-MM.rds"))
++     ##  Unit: milliseconds
++     ## expr       min        lq      mean    median        uq       max neval     cld
++     ##   20  69.39570  69.81790  77.56782  70.57196  83.42209 106.99486    50 a c
++     ##   30  65.93456  66.25498  74.50335  75.90799  79.75036 109.47599    50 a
++     ##   50  67.34745  67.79331  75.19469  74.24777  81.23589 110.43351    50 ab
++     ##   75  73.80876  74.39447  80.65022  74.81652  87.78234  97.88324    50 c
++     ##  100  73.41202  74.04703  80.18060  74.54868  87.18580 100.43682    50 bc
++     ##  150  84.22918  84.84177  91.80059  88.15417  98.20942 110.56206    50 d
++     ##  200  95.16414  96.03317 103.78675 102.60769 109.54751 124.72909    50 e
++     ##  300 100.85332 101.92437 110.57415 114.17656 115.49912 127.33436    50 f
++     ##  500 135.84538 136.51482 146.19712 147.00547 150.89283 168.85675    50 g
++ 
++ 
++     ## algo 1
++     microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]], adjust.n = FALSE),
++                                    "30" = sCorrect(ls.lvmfit[["30"]], adjust.n = FALSE),
++                                    "50" = sCorrect(ls.lvmfit[["50"]], adjust.n = FALSE),
++                                    "75" = sCorrect(ls.lvmfit[["75"]], adjust.n = FALSE),
++                                    "100" = sCorrect(ls.lvmfit[["100"]], adjust.n = FALSE),
++                                    "150" = sCorrect(ls.lvmfit[["150"]], adjust.n = FALSE),
++                                    "200" = sCorrect(ls.lvmfit[["200"]], adjust.n = FALSE),
++                                    "300" = sCorrect(ls.lvmfit[["300"]], adjust.n = FALSE),
++                                    "500" = sCorrect(ls.lvmfit[["500"]], adjust.n = FALSE),
++                                    times = 50
++                                    )
++ 
++  ##    Unit: milliseconds
++  ## expr      min       lq     mean   median        uq       max neval cld
++  ##   20 61.12207 61.89103 67.11139 62.30654  74.28165  84.35549    50 ab
++  ##   30 57.61594 58.47489 63.14203 58.77178  69.97194  80.96973    50 a
++  ##   50 57.41271 58.22566 63.15129 58.60405  70.33352  81.86037    50 a
++  ##   75 59.96228 60.93910 65.10109 61.19560  71.52710  82.51120    50 ab
++  ##  100 59.27039 60.17768 65.60692 60.53852  73.16995  87.10152    50 ab
++  ##  150 64.17464 65.00253 70.36660 65.65108  77.83555  94.41263    50 bc
++  ##  200 68.49831 69.93842 75.63357 70.20745  83.07964  99.63952    50 c
++  ##  300 71.64350 73.22267 84.43144 79.54653  86.80744 261.91039    50 d
++  ##  500 88.03692 89.63215 97.82069 97.94335 103.16340 115.95299    50 e
++ 
++ }
+> 
+> proc.time()
+    user   system  elapsed 
+6672.177   15.985 6690.843 

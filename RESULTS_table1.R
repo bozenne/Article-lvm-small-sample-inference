@@ -1,6 +1,3 @@
-## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
-## setwd(path)
-
 path.results <- "./Results"
 path.data <- "./data/"
 

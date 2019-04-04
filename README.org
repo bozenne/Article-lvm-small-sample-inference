@@ -9,15 +9,15 @@ in Latent Variable Models". It is organized as follows:
   space but available upon request.  
 
 - *the BUILD file* gather the results of the various simulations by
-  reading the data in the =Results= directory. It convert them into a
-  small number of table (=data.table= format) and export them in the
+  reading the data in the =Results= directory. It converts them into a
+  small number of table (=data.table= format) and exports them in the
   =Results= directory.
 - *the RESULTS files* are used to generate the numbers, figures, and
   tables displayed in the article.
 
 
 /Example:/ the first run of the file =BATCH_simulation-mixedModel.R=
-  export the results in
+  exports the results in
   =Results/simulation-mixedModel/estimate-S1.rds=. Running
   =BUILD_simulation= will read all the final results in
   =Results/simulation-mixedModel= (e.g. =estimate-S1.rds= to
@@ -32,27 +32,27 @@ in Latent Variable Models". It is organized as follows:
 
 * More details on the BATCH files
 
-- =BATCH\_simulation-mixedModel.R=, =BATCH\_simulation-factorModel.R=,
-  and =BATCH\_simulation-lvm.R= : these files were used to perform the
+- =BATCH_simulation-mixedModel.R=, =BATCH_simulation-factorModel.R=,
+  and =BATCH_simulation-lvm.R= : these files were used to perform the
   simulations studies in section 7 (respectively, scenario A, B, and
   C). They also contains the code to assess the timing of Algorithm 2
   reported in the discussion.
 
 
-- =BATCH\_illustration-mixedModel.R=,
-  =BATCH\_illustration-factorModel.R=, =BATCH\_illustration-lvm.R= :
+- =BATCH_illustration-mixedModel.R=,
+  =BATCH_illustration-factorModel.R=, =BATCH_illustration-lvm.R= :
   these files contains to the simulation study used to assess the type
   1 error of the latent variable models used in the illustration
   section (respectively, section 9.1, 9.2, and 9.3).
 
-- =BATCH\_comparison-ML-IV-GLS.R=: this file was used to assess the
+- =BATCH_comparison-ML-IV-GLS.R=: this file was used to assess the
   control of the type 1 error when using Wald test with (uncorrected)
   maximum likelihood estimator and other estimators (IV,GLS,WLS). This
   corresponds to the last paragraph of the discussion and table S4 in
   the supplementary material.
 
-- =BATCH\_IV-non-normal.R=, =BATCH\_IV-non-normal2.R=,
-  =BATCH\_IV-non-normal3.R=: these files correspond to additional
+- =BATCH_IV-non-normal.R=, =BATCH_IV-non-normal2.R=,
+  =BATCH_IV-non-normal3.R=: these files correspond to additional
   simulations performed to assess the control of type 1 error in
   misspecified models (e.g. residuals non normally distributed,
   misspecified covariance structure). The results are not reported in

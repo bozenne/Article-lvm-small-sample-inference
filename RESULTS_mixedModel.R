@@ -1,10 +1,8 @@
-## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
-## setwd(path)
 path.results <- "./Results"
 path.data <- "./data/"
 
 ## * packages
-devtools::load_all("lavaSearch2")
+library(lavaSearch2)
 library(lme4)
 library(lmerTest)
 library(data.table)

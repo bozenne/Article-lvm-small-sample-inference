@@ -1,0 +1,280 @@
+
+R version 3.5.2 (2018-12-20) -- "Eggshell Igloo"
+Copyright (C) 2018 The R Foundation for Statistical Computing
+Platform: x86_64-pc-linux-gnu (64-bit)
+
+R is free software and comes with ABSOLUTELY NO WARRANTY.
+You are welcome to redistribute it under certain conditions.
+Type 'license()' or 'licence()' for distribution details.
+
+  Natural language support but running in an English locale
+
+R is a collaborative project with many contributors.
+Type 'contributors()' for more information and
+'citation()' on how to cite R or R packages in publications.
+
+Type 'demo()' for some demos, 'help()' for on-line help, or
+'help.start()' for an HTML browser interface to help.
+Type 'q()' to quit R.
+
+[Previously saved workspace restored]
+
+> ## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
+> ## setwd(path)
+> ## source("BATCH_illustration-lvm.R")
+> 
+> rm(list = ls())
+> gc()
+          used (Mb) gc trigger  (Mb) max used (Mb)
+Ncells 1323851 70.8    2680944 143.2  1658612 88.6
+Vcells 2267517 17.3    8388608  64.0  4613842 35.3
+> 
+> ## * seed
+> iter_sim <- as.numeric(Sys.getenv("SGE_TASK_ID"))
+> n.iter_sim <- as.numeric(Sys.getenv("SGE_TASK_LAST"))
+> if(is.na(iter_sim)){iter_sim <- 15}
+> if(is.na(n.iter_sim)){n.iter_sim <- 40}
+> cat("iteration ",iter_sim," over ",n.iter_sim,"\n",sep="")
+iteration 40 over 40
+> 
+> set.seed(3)
+> seqSeed <- sample(1:max(1e5,n.iter_sim),size=n.iter_sim,replace=FALSE)
+> iSeed <- seqSeed[iter_sim]
+> set.seed(iSeed)
+> 
+> cat("seed: ",iSeed,"\n",sep="")
+seed: 20756
+> 
+> ## * path
+> path <- "."
+> path.res <- file.path(path,"Results","illustration-lvm")
+> if(dir.exists(path.res)==FALSE){
++     dir.create(path.res)
++ }
+> path.output <- file.path(path,"output","illustration-lvm")
+> if(dir.exists(path.output)==FALSE){
++     dir.create(path.output)
++ }
+> 
+> ## * libraries
+> library(lava)
+> library(data.table)
+> ## devtools::load_all("lavaSearch2")
+> library(lavaSearch2)
+Loading required package: ggplot2
+
+Attaching package: ‘ggplot2’
+
+The following object is masked from ‘package:lava’:
+
+    vars
+
+lavaSearch2 version 1.5.3
+> 
+> ## * settings
+> seqN <- c(24)
+> n.boot <- 0
+> n.rep <- 5e2 * 10
+> 
+> ## * model
+> 
+> ## ** generative model
+> m.generative <- lvm(frc ~ httlpr2 + u , amy ~ u, acc ~ u, hip ~ u)
+> regression(m.generative) <- c(pos.imm5, pos.shr, pos.del) ~ m.pos
+> regression(m.generative) <- c(neg.imm5, neg.shr, neg.del) ~ m.neg
+> regression(m.generative) <- c(neu.imm5, neu.shr, neu.del) ~ m.neu
+> regression(m.generative) <- u ~ age0
+> regression(m.generative) <- m.pos ~ u + age0
+> regression(m.generative) <- m.neg ~ u + age0
+> regression(m.generative) <- m.neu ~ u  + age0
+> covariance(m.generative) <- amy ~ hip
+> latent(m.generative) <- ~u + m.pos + m.neg + m.neu
+> 
+> distribution(m.generative, ~httlpr2) <- lava::binomial.lvm(p=0.4166)
+> distribution(m.generative, ~age0) <- lava::gaussian.lvm(sd=6.926)
+> 
+> 
+> generative.coef <- c("u" = 0.665862,
++                      "amy" = -0.124351,
++                      "acc" = -0.082397,
++                      "hip" = 0.327872,
++                      "pos.shr" = -5.860545,
++                      "pos.del" = -6.363676,
++                      "m.pos" = 9.640682,
++                      "neg.shr" = -3.138381,
++                      "neg.del" = -4.851905,
++                      "m.neg" = 7.120127,
++                      "neu.shr" = -1.187194,
++                      "neu.del" = -2.133435,
++                      "m.neu" = 9.846,
++                      "frc~httlpr2" = 0.030707,
++                      "u~age0" = -0.002664,
++                      "amy~u" = 1.520811,
++                      "acc~u" = 1.357993,
++                      "hip~u" = 1.065282,
++                      "pos.shr~m.pos" = 2.110027,
++                      "pos.del~m.pos" = 2.284593,
++                      "m.pos~u" = 0,
++                      "m.pos~age0" = -0.06504,
++                      "neg.shr~m.neg" = 1.731918,
++                      "neg.del~m.neg" = 2.107359,
++                      "m.neg~u" = 0,
++                      "m.neg~age0" = -0.075826,
++                      "neu.shr~m.neu" = 1.333535,
++                      "neu.del~m.neu" = 1.494576,
++                      "m.neu~u" = 0,
++                      "m.neu~age0" = -0.057311,
++                      "frc~~frc" = 0.000346,
++                      "u~~u" = 0.004845,
++                      "amy~~amy" = 0.021234,
++                      "acc~~acc" = 0.001896,
++                      "hip~~hip" = 0.009439,
++                      "pos.imm5~~pos.imm5" = 0.517555,
++                      "pos.shr~~pos.shr" = 0.913716,
++                      "pos.del~~pos.del" = 0.32748,
++                      "m.pos~~m.pos" = 0.158005,
++                      "neg.imm5~~neg.imm5" = 0.31036,
++                      "neg.shr~~neg.shr" = 0.81319,
++                      "neg.del~~neg.del" = 0.156672,
++                      "m.neg~~m.neg" = 0.393181,
++                      "neu.imm5~~neu.imm5" = 0.304089,
++                      "neu.shr~~neu.shr" = 0.725098,
++                      "neu.del~~neu.del" = 0.562479,
++                      "m.neu~~m.neu" = 0.401224,
++                      "amy~~hip" = 0.010661)
+> 
+> # plot(m.generative)
+> 
+> ## ** fit model
+> m.fit0 <- lvm(frc ~ u , amy ~ u, acc ~ u, hip ~ u)
+> regression(m.fit0) <- c(pos.imm5, pos.shr, pos.del) ~ m.pos
+> regression(m.fit0) <- c(neg.imm5, neg.shr, neg.del) ~ m.neg
+> regression(m.fit0) <- c(neu.imm5, neu.shr, neu.del) ~ m.neu
+> latent(m.fit0) <- ~u + m.pos + m.neg + m.neu
+> 
+> m.fit1 <- m.fit0
+> regression(m.fit1) <- u ~ age0
+> regression(m.fit1) <- frc ~ httlpr2
+> regression(m.fit1) <- m.pos ~ age0
+> regression(m.fit1) <- m.neg ~ age0
+> regression(m.fit1) <- m.neu ~ age0
+> 
+> m.fit2 <- m.fit1
+> covariance(m.fit2) <- amy ~ hip
+> regression(m.fit2) <- m.pos ~ u
+> regression(m.fit2) <- m.neg ~ u
+> regression(m.fit2) <- m.neu ~ u
+> ## a1ba1a1a1a1a1aa2a1a1ba1a1baa1a1a1a1a1a1a1
+> 
+> ## lava::estimate(m.fit, lava::sim(m.generative, n = 1e4, p = generative.coef))
+> ## lava::estimate(m.fit0, lava::sim(m.generative, n = 200, p = generative.coef))
+> 
+> ## * simulation
+> out <- calibrateType1(m.fit2, warmup = list(m.fit1), true.coef = generative.coef,
++                       param =  c("m.pos~u","m.neg~u","m.neu~u"),
++                       n = seqN, n.rep = n.rep, 
++                       generative.object = m.generative, generative.coef = generative.coef,
++                       dir.save = path.res, label.file = iter_sim,
++                       bootstrap = FALSE, seed = NULL, trace = 2, constrain = FALSE)
+  Check true coefficients (incorrect convergence of the model) - done 
+  Settings: 
+  > simulation for n=24
+  > model: 
+Latent Variable Model
+                                     
+  frc ~ u+httlpr2    gaussian        
+  u ~ age0           gaussian, latent
+  amy ~ u            gaussian        
+  acc ~ u            gaussian        
+  hip ~ u            gaussian        
+  pos.imm5 ~ m.pos   gaussian        
+  pos.shr ~ m.pos    gaussian        
+  pos.del ~ m.pos    gaussian        
+  m.pos ~ u+age0     gaussian, latent
+  neg.imm5 ~ m.neg   gaussian        
+  neg.shr ~ m.neg    gaussian        
+  neg.del ~ m.neg    gaussian        
+  m.neg ~ u+age0     gaussian, latent
+  neu.imm5 ~ m.neu   gaussian        
+  neu.shr ~ m.neu    gaussian        
+  neu.del ~ m.neu    gaussian        
+  m.neu ~ u+age0     gaussian, latent
+
+Exogenous variables:                         
+  age0           gaussian
+  httlpr2        gaussian
+
+  > expected coefficients: 
+                 u                amy                acc                hip 
+          0.665862          -0.124351          -0.082397           0.327872 
+           pos.shr            pos.del              m.pos            neg.shr 
+         -5.860545          -6.363676           9.640682          -3.138381 
+           neg.del              m.neg            neu.shr            neu.del 
+         -4.851905           7.120127          -1.187194          -2.133435 
+             m.neu        frc~httlpr2             u~age0              amy~u 
+          9.846000           0.030707          -0.002664           1.520811 
+             acc~u              hip~u      pos.shr~m.pos      pos.del~m.pos 
+          1.357993           1.065282           2.110027           2.284593 
+           m.pos~u         m.pos~age0      neg.shr~m.neg      neg.del~m.neg 
+          0.000000          -0.065040           1.731918           2.107359 
+           m.neg~u         m.neg~age0      neu.shr~m.neu      neu.del~m.neu 
+          0.000000          -0.075826           1.333535           1.494576 
+           m.neu~u         m.neu~age0           frc~~frc               u~~u 
+          0.000000          -0.057311           0.000346           0.004845 
+          amy~~amy           acc~~acc           hip~~hip pos.imm5~~pos.imm5 
+          0.021234           0.001896           0.009439           0.517555 
+  pos.shr~~pos.shr   pos.del~~pos.del       m.pos~~m.pos neg.imm5~~neg.imm5 
+          0.913716           0.327480           0.158005           0.310360 
+  neg.shr~~neg.shr   neg.del~~neg.del       m.neg~~m.neg neu.imm5~~neu.imm5 
+          0.813190           0.156672           0.393181           0.304089 
+  neu.shr~~neu.shr   neu.del~~neu.del       m.neu~~m.neu           amy~~hip 
+          0.725098           0.562479           0.401224           0.010661 
+  > null hypotheses: 
+m.pos~u m.neg~u m.neu~u 
+      0       0       0 
+
+ Perform simulation: 
+  > export results in  ./Results/illustration-lvm 
+Loading required namespace: pbapply
+  > sample size=24
+> 
+> ## * display
+> print(sessionInfo())
+R version 3.5.2 (2018-12-20)
+Platform: x86_64-pc-linux-gnu (64-bit)
+Running under: openSUSE 13.1 (Bottle) (x86_64)
+
+Matrix products: default
+BLAS: /usr/local/R-3.5.2/lib/libRblas.so
+LAPACK: /usr/local/R-3.5.2/lib/libRlapack.so
+
+locale:
+ [1] LC_CTYPE=en_US.UTF-8       LC_NUMERIC=C              
+ [3] LC_TIME=en_US.UTF-8        LC_COLLATE=en_US.UTF-8    
+ [5] LC_MONETARY=en_US.UTF-8    LC_MESSAGES=en_US.UTF-8   
+ [7] LC_PAPER=en_US.UTF-8       LC_NAME=C                 
+ [9] LC_ADDRESS=C               LC_TELEPHONE=C            
+[11] LC_MEASUREMENT=en_US.UTF-8 LC_IDENTIFICATION=C       
+
+attached base packages:
+[1] stats     graphics  grDevices utils     datasets  methods   base     
+
+other attached packages:
+[1] lavaSearch2_1.5.3 ggplot2_3.1.0     data.table_1.12.0 lava_1.6.5       
+
+loaded via a namespace (and not attached):
+ [1] Rcpp_1.0.0       pillar_1.3.1     compiler_3.5.2   plyr_1.8.4      
+ [5] bindr_0.1.1      tools_3.5.2      tibble_2.0.1     gtable_0.2.0    
+ [9] lattice_0.20-38  pkgconfig_2.0.2  rlang_0.3.1      Matrix_1.2-14   
+[13] parallel_3.5.2   mvtnorm_1.0-10   bindrcpp_0.2.2   stringr_1.3.1   
+[17] withr_2.1.2      dplyr_0.7.5      grid_3.5.2       tidyselect_0.2.4
+[21] glue_1.2.0       R6_2.3.0         pbapply_1.3-4    survival_2.42-6 
+[25] multcomp_1.4-10  TH.data_1.0-10   purrr_0.2.5      reshape2_1.4.3  
+[29] magrittr_1.5     scales_1.0.0     codetools_0.2-15 splines_3.5.2   
+[33] MASS_7.3-50      assertthat_0.2.0 colorspace_1.4-0 sandwich_2.5-0  
+[37] stringi_1.2.2    lazyeval_0.2.1   munsell_0.5.0    crayon_1.3.4    
+[41] zoo_1.8-4       
+> 
+> proc.time()
+     user    system   elapsed 
+22212.613    27.742 22715.202 

@@ -1,11 +1,8 @@
-## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
-## setwd(path)
-
 path.results <- "./Results"
 path.data <- "./data2/"
 
 ## * packages
-devtools::load_all("lavaSearch2")
+library(lavaSearch2)
 library(data.table)
 
 ## * Import

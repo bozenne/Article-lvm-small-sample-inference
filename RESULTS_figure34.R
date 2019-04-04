@@ -1,12 +1,7 @@
-## path <- "P:/Cluster/LVMproject/article-smallSampleInference"
-## setwd(path) 
-
 library(data.table)
 library(ggplot2)
 source("FCT.R") ## get function createFigure/createFigureBIS/groupFigures
 export <- TRUE
-
-## TODO decrease thickness of lines figures BIS
 
 ## * path
 path.results <- "./Results"
