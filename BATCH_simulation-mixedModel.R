@@ -33,7 +33,6 @@ if(dir.exists(path.output)==FALSE){
 ## * libraries
 library(lava)
 library(data.table)
-## devtools::load_all("lavaSearch2")
 library(lavaSearch2)
 
 ## * settings
@@ -51,8 +50,6 @@ m.generative <- lvm(c(Y1[mu1:sigma]~1*eta,
 latent(m.generative) <- ~eta
 categorical(m.generative, labels = c("N","Y")) <- ~Gene1
  
-## plot(m)
-
 ## ** investigator model
 m.fit <- lvm(c(Y1[mu1:sigma]~1*eta,
                Y2[mu2:sigma]~1*eta,
@@ -60,7 +57,6 @@ m.fit <- lvm(c(Y1[mu1:sigma]~1*eta,
                eta~beta1*Age + beta2*Gene1))
 latent(m.fit) <- ~eta
 categorical(m.fit, labels = c("N","Y")) <- ~Gene1
-## lava::estimate(m.fit, lava::sim(m.generative, n = 1e5))
 
 ## ** true value of the coefficients
 if(FALSE){ ## create true.coef
@@ -88,8 +84,6 @@ out <- calibrateType1(m.fit, true.coef = true.coef,
                       generative.object = m.generative,
                       dir.save = path.res, label.file = iter_sim,
                       bootstrap = FALSE, seed = NULL, trace = 2)
-
-## summary(out)
 
 ## * display
 print(sessionInfo())

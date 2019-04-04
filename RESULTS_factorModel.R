@@ -85,7 +85,7 @@ bdnf.null <- c('u~bdnf2mx', 'neo~httlpr2sx')
 coef.bdnf.ML <- coef(e.bdnf2)
 
 
-## * Simulation study (section 7.2) 
+## * Simulation study (section 8.2) 
 
 ## convergence
 dttype1.sim.factor[,100*min(n.rep)/20000, by = "n"]
@@ -99,7 +99,7 @@ dttype1.sim.factor[n == 20 & link %in% c("Y2","Y4~eta","eta~Gene1Y","Y1~Gene2Y")
 ## type 1 error after correction
 dttype1.sim.factor[n == 20 & link %in% c("Y2","Y4~eta","eta~Gene1Y","Y1~Gene2Y") & method %in% c("p.robustKR"), .(link,type1)]
 
-## * Illustration (section 8.2)
+## * Illustration (section 9.2)
 
 ## number of patients/observations
 c(nrow = NROW(dt.bdnf), n.id = length(unique(dt.bdnf$cimbi.id)))

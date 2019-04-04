@@ -98,7 +98,7 @@ e.memory <- estimate(m.memory, data = dtG.memory,
 memory.null <- c( c('m.pos~u', 'm.neu~u', 'm.neg~u'))
 coef.memory.ML <- coef(e.memory)
 
-## * Simulation study (section 7.3)
+## * Simulation study (section 8.3)
 
 ## number of parameters in the model
 length(param.sim.lvm)
@@ -109,7 +109,7 @@ cbind(dttype1.sim.lvm[n==20 & link %in% keep.link & method %in% c("p.Ztest"), .(
       dttype1.sim.lvm[n==20 & link %in% keep.link & method %in% c("p.SSC"),.(type1MLssc = type1)],
       dttype1.sim.lvm[n==20 & link %in% keep.link & method %in% c("p.KR"),.(type1MLc = type1)])
 
-## * Illustration (section 8.3)
+## * Illustration (section 9.3)
 
 ## number of patients/observations
 c(nrow = NROW(dtG.memory), id = length(unique(dtG.memory$cimbi.id)))

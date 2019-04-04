@@ -35,7 +35,6 @@ library(lava)
 library(data.table)
 library(multcomp)
 library(MIIVsem)
-## devtools::load_all("lavaSearch2")
 library(lavaSearch2)
 
 ## * settings
@@ -61,8 +60,6 @@ distribution(m.generative, ~Y2) <- student.lvm(df = 2)
 distribution(m.generative, ~Y3) <- student.lvm(df = 2)
 distribution(m.generative, ~Y4) <- student.lvm(df = 2)
 
-# plot(m.generative)
-
 ## ** fit model
 m.fit <- lvm(c(Y1~eta,
                Y2~eta+Gene1,
@@ -70,8 +67,6 @@ m.fit <- lvm(c(Y1~eta,
                Y4~eta,
                eta~Age+Gene2))
 latent(m.fit) <- ~eta
-## ee <- lava::estimate(m.fit, lava::sim(m.generative, n = 1e3))
-## butils::qqplot2(ee)
 
 m.fit2 <- '
     eta =~ Y1 + Y2 + Y3 + Y4  
@@ -81,7 +76,6 @@ m.fit2 <- '
 
 ## * simulation
 dt.res <- NULL
-## paste(names(coef(e.LM)),collapse=",")
 keep.coef <- c("eta","Y2","Y3","Y4","Y2~Gene1Y","eta~Age","eta~Gene2Y","Y2~eta","Y3~eta","Y4~eta")
 keep.type <- c("alpha","nu","nu","nu","K","Gamma","Gamma","Lambda","Lambda","Lambda")
 df.null <- rbind(data.frame(lava.name = "eta", lavaan.name = "eta~1", type = "alpha", null = 0, stringsAsFactors = FALSE),
@@ -222,85 +216,3 @@ saveRDS(dt.res, file = file.path(path.res,filename))
 print(sessionInfo())
 
 
-## * extra
-if(FALSE){
-    seqN <- c(20,30,50,100)
-
-    ## ** model
-    library(lava)
-    m1 <- lvm(c(Y1,Y2,Y3,Y4) ~ eta)
-    regression(m1) <- eta ~ X1 + X2
-    regression(m1) <- Y1 ~ X1
-    latent(m1) <- ~eta
-
-    m2 <- lvm(c(Y1,Y2,Y3,Y4) ~ eta)
-    regression(m2) <- eta ~ X1 + X2
-    regression(m2) <- Y1 ~ X3
-    regression(m2) <- Y2 ~ X4
-    regression(m2) <- Y3 ~ X5
-    regression(m2) <- Y4 ~ X6
-    latent(m2) <- ~eta
-
-    ## ** warper
-    runML1 <- function(..., n){
-        n <- 1000
-        d <- lava::sim(m1, n = n, latent = FALSE)
-        e <- estimate(m1, data = d, estimator = "gaussian")
-        e2 <- estimate(m1, data = d, estimator = "IV")
-        summary(e2)
-        return(c("ML"=coef(e)[c("Y4~X1","eta~X1","eta~X2")],
-                 "IV"=coef(e2)[c("Y4~X1","eta~X1","eta~X2")]))
-    }
-    runML2 <- function(..., n){
-        d <- lava::sim(m2, n = n, latent = FALSE)
-        e <- estimate(m2, data = d, estimator = "gaussian")
-        e2 <- estimate(m2, data = d, estimator = "IV")
-        return(c("ML"=coef(e)[c("Y1~X3","Y","eta~X1","eta~X2")],
-                 "IV"=coef(e2)[c("Y1~X3","eta~X1","eta~X2")]))
-    }
-
-    ## ** run
-    set.seed(17)
-    ls.sim <- lapply(seqN, function(iN){
-        sim(runML, m = m1, n = iN, mc.cores = 4)
-    })
-    names(ls.sim) <- seqN
-    lapply(ls.sim,summary)
-
-set.seed(17)
-simres <- lava::sim(runML2, n = 100, mc.cores = 4)
-
-
-library(MIIVsem)
-model1 <- '
-    eta =~ y1 + y2  + y3  + y4  
-    eta ~ X1 + X2
-    y1 ~ X1
-  '
-
-model2 <- '
-    eta =~ y1 + y2 + y3 + y4  
-    eta ~ X1 + X2
-    y1 ~ X3
-    y2 ~ X4
-    y3 ~ X5
-    y4 ~ X6
-  '
-
-dd1 <- sim(m1, n = 100)
-e.lava <- estimate(m1, data = dd1, estimator = "IV")
-e.lavaan <- miive(model = model1, data = dd1)
-
-
-dd2 <- sim(m2, n = 100)
-e.lavaan <- miive(model = model2, data = dd2)
-
-
-## from the help of MIIVsem:::miive
-## Certain model specifications are not currently supported. For example, the scaling indicator of
-## a latent variable is not permitted to cross-load on another latent variable. 
-
-## In addition, MIIVsem does not currently support relations where the scaling indicator of a
-## latent variable is also the dependent variable in a regression equation. The model below would
-## not be valid under the current algorithm
-}

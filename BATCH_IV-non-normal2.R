@@ -35,7 +35,6 @@ library(lava)
 library(data.table)
 library(multcomp)
 library(MIIVsem)
-## devtools::load_all("lavaSearch2")
 library(lavaSearch2)
 
 ## * settings
@@ -61,9 +60,6 @@ distribution(m.generative, ~Y2) <- chisq.lvm(df = 5)
 distribution(m.generative, ~Y3) <- chisq.lvm(df = 5)
 distribution(m.generative, ~Y4) <- chisq.lvm(df = 5)
 
-
-# plot(m.generative)
-
 ## ** fit model
 m.fit <- lvm(c(Y1~eta,
                Y2~eta+Gene1,
@@ -71,10 +67,6 @@ m.fit <- lvm(c(Y1~eta,
                Y4~eta,
                eta~Age+Gene2))
 latent(m.fit) <- ~eta
-## dd <- lava::sim(m.generative, n = 1e4)
-## ee <- lava::estimate(m.fit, data = dd)
-## butils::qqplot2(ee)
-## hist(dd$Y1, breaks = 100)
 
 m.fit2 <- '
     eta =~ Y1 + Y2 + Y3 + Y4  
@@ -85,8 +77,6 @@ m.fit2 <- '
 
 ## * simulation
 dt.res <- NULL
-## paste(names(coef(e.LM)),collapse=",")
-## coefType(e.ML, as.lava = FALSE)
 keep.coef <- c("eta","Y2","Y3","Y4","Y2~Gene1Y","eta~Age","eta~Gene2Y","Y2~eta","Y3~eta","Y4~eta")
 keep.type <- c("alpha","nu","nu","nu","K","Gamma","Gamma","Lambda","Lambda","Lambda")
 df.null <- rbind(data.frame(lava.name = "eta", lavaan.name = "eta~1", type = "alpha", null = 0, stringsAsFactors = FALSE),

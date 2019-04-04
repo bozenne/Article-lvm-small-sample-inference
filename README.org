@@ -1,11 +1,77 @@
 This directory contains the R code used to generate the results
 presented in the article: "Small Sample Maximum Likelihood Inference
 in Latent Variable Models". It is organized as follows:
-- the "BATCH_" files define the simulation studies. The output of the
-  simulation studies are not save in the directory to save space.
-- the "BUILD_simulation.R" file collects the results from the
-  simulation studies and save them into data.table objects in the
-  folder Results.
-- the "RESULTS_" files are used to generate the numbers, figures, and
+- *the BATCH files* define the simulation studies. Each file was
+  excecuted 40 times using a different id (obtain using
+  =Sys.getenv("SGE_TASK_ID")= in R) and therefore a different seed
+  when randomly generating the data. The output of the simulations
+  were saved in a =Results= directory, not uploaded on Github to save
+  space but available upon request.  
+
+- *the BUILD file* gather the results of the various simulations by
+  reading the data in the =Results= directory. It convert them into a
+  small number of table (=data.table= format) and export them in the
+  =Results= directory.
+- *the RESULTS files* are used to generate the numbers, figures, and
   tables displayed in the article.
 
+
+/Example:/ the first run of the file =BATCH_simulation-mixedModel.R=
+  export the results in
+  =Results/simulation-mixedModel/estimate-S1.rds=. Running
+  =BUILD_simulation= will read all the final results in
+  =Results/simulation-mixedModel= (e.g. =estimate-S1.rds= to
+  =estimate-S40.rds=) and combine them in a single table. The type 1
+  errror rate is then computed and exported in
+  =Results/type1error-illustration-mixedModel.rds=. The bias of the
+  estimates is also computed and exported in
+  =Results/bias-simulation-mixedModel=. The file =RESULTS_figure34.R=
+  uses =Results/type1error-illustration-mixedModel.rds= to produce
+  figure 3.
+
+
+* More details on the BATCH files
+
+- =BATCH\_simulation-mixedModel.R=, =BATCH\_simulation-factorModel.R=,
+  and =BATCH\_simulation-lvm.R= : these files were used to perform the
+  simulations studies in section 7 (respectively, scenario A, B, and
+  C). They also contains the code to assess the timing of Algorithm 2
+  reported in the discussion.
+
+
+- =BATCH\_illustration-mixedModel.R=,
+  =BATCH\_illustration-factorModel.R=, =BATCH\_illustration-lvm.R= :
+  these files contains to the simulation study used to assess the type
+  1 error of the latent variable models used in the illustration
+  section (respectively, section 9.1, 9.2, and 9.3).
+
+- =BATCH\_comparison-ML-IV-GLS.R=: this file was used to assess the
+  control of the type 1 error when using Wald test with (uncorrected)
+  maximum likelihood estimator and other estimators (IV,GLS,WLS). This
+  corresponds to the last paragraph of the discussion and table S4 in
+  the supplementary material.
+
+- =BATCH\_IV-non-normal.R=, =BATCH\_IV-non-normal2.R=,
+  =BATCH\_IV-non-normal3.R=: these files correspond to additional
+  simulations performed to assess the control of type 1 error in
+  misspecified models (e.g. residuals non normally distributed,
+  misspecified covariance structure). The results are not reported in
+  the manuscript but are available upon request.
+
+* More details on the RESULTS files
+- =RESULTS_mixedModel.R= this file generates table 2 (main manuscript)
+  figures S1 (supplementary material) and the results for section 8.1
+  and 9.1.
+- =RESULTS_factorModel.R=: this file generates the results for section
+  8.2 and 9.2. Only the part relative to section 8.2 can be run since
+  we cannot make clinical data publicly available.
+- =RESULTS_lvm=: this file generates the results for section 8.3 and
+  9.3.  Only the part relative to section 8.3 can be run since we
+  cannot make clinical data publicly available.
+- =RESULTS_figure34.R=: this file generates figures 3 and 4 (main
+  manuscript), as well as table S4 (supplementary material).
+- =RESULTS_table1.R=: this file generates table 1 (main
+  manuscript). It cannot be run because the data =dist-simulation.rds=
+  is too large (358 MB) to be uploaded on the Github repository. The
+  file is available upon request.
+- =RESULTS_tableS1S2S3.R=: this file generates tables S1, S2, S3 (supplementary material).

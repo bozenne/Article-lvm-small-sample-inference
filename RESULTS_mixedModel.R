@@ -62,7 +62,7 @@ vitamin.ML <- estimate(m.vitamin, data = dtW.vitamin)
 coef.vitamin.ML <- coef(vitamin.ML)
 ## coef.vitamin.ML
 
-## * Simulation study (section 7.1)
+## * Simulation study (section 8.1)
 
 ## convergence
 dttype1.sim.mm[,100*min(n.rep)/20000, by = "n"]
@@ -78,7 +78,7 @@ dttype1.sim.mm[n==20 & method %in% c("p.Ztest"), .(link,inflation = type1-0.05)]
 ## type 1 error after correction
 dttype1.sim.mm[n==20 & method %in% c("p.KR")]
 
-## * Illustration (section 8.1)
+## * Illustration (section 9.1)
 
 ## REML estimates
 Ftest.vitamin.REML <- anova(vitamin.REML)
@@ -131,7 +131,12 @@ row.ML <- c("residual variance" = as.double(coef.vitamin.ML["w1~~w1"]),
 row.correctedML <- c("residual variance" = as.double(coef.vitamin.MLc["w1~~w1"]),
                      "variance random intercept" = as.double(coef.vitamin.MLc["eta~~eta"]),
                      "statistic" = as.double(Ftest.vitamin.MLc[["statistic"]]),
-                     "degrees of freedom" = as.double(Ftest.vitamin.REML[["DenDF"]][2]),
+                     "degrees of freedom" = as.double(Ftest.vitamin.MLc[["parameter"]]),
+                     "p-value" = as.double(Ftest.vitamin.MLc[["p.value"]]))
+row.REML <- c("residual variance" = as.double(coef.vitamin.REML["sigma2"]),
+              "variance random intercept" = as.double(coef.vitamin.REML["tau"]),
+              "statistic" = as.double(Ftest.vitamin.REML[["F value"]][2]),
+              "degrees of freedom" = as.double(Ftest.vitamin.REML[["DenDF"]][2]),
               "p-value" = as.double(Ftest.vitamin.REML[["Pr(>F)"]][2]))
 M <- cbind("ML" = row.ML, 
            "ML with correction" = row.correctedML,
@@ -141,8 +146,7 @@ M.txt <- rbind(format(M[1:3,], digits = 3, nsmall = 3),
                format(M[5,,drop=FALSE], digits = 2, nsmall = 2))
 M.txt[is.infinite(M)] <- "$\\infty$"
 
-print(xtable::xtable(M.txt,
-                     label = "tab:mixed"),
+print(xtable::`align<-`(xtable::xtable(M.txt, label = "tab:mixed"), "rccc"),
       include.colnames = TRUE,
       include.rownames = TRUE,
       sanitize.text.function = function(x){x},

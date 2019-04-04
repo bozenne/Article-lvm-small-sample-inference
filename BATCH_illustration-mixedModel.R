@@ -33,7 +33,6 @@ if(dir.exists(path.output)==FALSE){
 ## * libraries
 library(lava)
 library(data.table)
-## devtools::load_all("lavaSearch2")
 library(lavaSearch2)
 
 ## * settings
@@ -81,8 +80,6 @@ m.fit <- lvm(w1[mu1:sigma] ~ 1*eta,
              w7[mu7:sigma] ~ grp + 1*eta,
              eta ~ 0)
 latent(m.fit) <- ~eta      
-## lava::estimate(m.fit, lava::sim(m.generative, n = 1e5, p = generative.coef))
-## vcov(lava::estimate(m.fit, lava::sim(m.generative, n = 10, p = generative.coef)))
 
 ## ** true value of the coefficients
 if(FALSE){ ## create true.coef
@@ -132,15 +129,12 @@ true.coef <- c("w1" = -1.20756,
                "eta~~eta" = 0.348873)
 
 ## * simulation
-## n.rep <- 10
 out <- calibrateType1(m.fit, true.coef = true.coef,
                       param = c("w5~grp","w6~grp","w7~grp"), F.test = TRUE,
                       n = seqN, n.rep = n.rep,
                       generative.object = m.generative, generative.coef = generative.coef,
                       dir.save = path.res, label.file = iter_sim,
                       bootstrap = FALSE, seed = NULL, trace = 2)
-
-## out$p.value
 
 ## * display
 print(sessionInfo())

@@ -3,9 +3,9 @@
 ## Author: Brice Ozenne
 ## Created: jan 17 2019 (14:14) 
 ## Version: 
-## Last-Updated: mar 18 2019 (11:15) 
+## Last-Updated: apr  1 2019 (11:03) 
 ##           By: Brice Ozenne
-##     Update #: 110
+##     Update #: 111
 ##----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -199,12 +199,12 @@ groupFigures <- function(figure1, figure2, figure3, reduce.x = TRUE){
     x.lvm <- c("20" = "black", "30" = "transparent", "50" = "black", "75" = "transparent", "100" = "black",
                "150" = "transparent", "200" = "black", "300" = "transparent", "500" = "black")
 
-    figure1 <- figure1 + ggtitle("scenario (A): mixed model") + xlab("") + theme(text = element_text(size = 10), legend.position="none")
-    figure2 <- figure2 + ggtitle("scenario (B): single factor model") + xlab("") + theme(text = element_text(size = 10), legend.position="none")
+    figure1 <- figure1 + ggtitle("Scenario A: mixed model") + xlab("") + theme(text = element_text(size = 10), legend.position="none")
+    figure2 <- figure2 + ggtitle("Scenario B: single factor model") + xlab("") + theme(text = element_text(size = 10), legend.position="none")
     if(reduce.x == TRUE){
         figure2 <- figure2 + theme(axis.text.x=element_text(color=x.factor))
     }
-    figure3 <- figure3 + ggtitle("scenario (C): two latent variables model") + theme(text = element_text(size = 10))
+    figure3 <- figure3 + ggtitle("Scenario C: two latent variables model") + theme(text = element_text(size = 10))
     figure3 <- figure3 + guides(color=guide_legend(nrow=2,byrow=TRUE)) + theme(legend.margin=margin(t = -0.25, unit='cm'))
     if(reduce.x == TRUE){
         figure3 <- figure3 + theme(axis.text.x=element_text(color=x.lvm))

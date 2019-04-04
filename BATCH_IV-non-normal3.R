@@ -86,7 +86,6 @@ sim2 <- function(n){
                )
     return(dL)
 }
-## ggplot(sim2(100), aes(x=id, y = Y1)) + geom_boxplot()
 
 ## ** fit model
 m.fit <- lvm(c(Y1~eta,
@@ -95,9 +94,6 @@ m.fit <- lvm(c(Y1~eta,
                Y4~eta,
                eta~Age+Gene2))
 latent(m.fit) <- ~eta
-## ee <- lava::estimate(m.fit, sim2(n = 1e3))
-## butils::qqplot2(ee)
-## hist(lava::sim(m.generative, n = 1e3)$Y1)
 
 m.fit2 <- '
     eta =~ Y1 + Y2 + Y3 + Y4  

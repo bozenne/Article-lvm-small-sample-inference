@@ -33,7 +33,6 @@ if(dir.exists(path.output)==FALSE){
 ## * libraries
 library(lava)
 library(data.table)
-## devtools::load_all("lavaSearch2")
 library(lavaSearch2)
 
 ## * settings
@@ -57,7 +56,6 @@ latent(m.generative) <- ~u + m.pos + m.neg + m.neu
 
 distribution(m.generative, ~httlpr2) <- lava::binomial.lvm(p=0.4166)
 distribution(m.generative, ~age0) <- lava::gaussian.lvm(sd=6.926)
-
 
 generative.coef <- c("u" = 0.665862,
                      "amy" = -0.124351,
@@ -108,8 +106,6 @@ generative.coef <- c("u" = 0.665862,
                      "m.neu~~m.neu" = 0.401224,
                      "amy~~hip" = 0.010661)
 
-# plot(m.generative)
-
 ## ** fit model
 m.fit0 <- lvm(frc ~ u , amy ~ u, acc ~ u, hip ~ u)
 regression(m.fit0) <- c(pos.imm5, pos.shr, pos.del) ~ m.pos
@@ -129,10 +125,6 @@ covariance(m.fit2) <- amy ~ hip
 regression(m.fit2) <- m.pos ~ u
 regression(m.fit2) <- m.neg ~ u
 regression(m.fit2) <- m.neu ~ u
-## a1ba1a1a1a1a1aa2a1a1ba1a1baa1a1a1a1a1a1a1
-
-## lava::estimate(m.fit, lava::sim(m.generative, n = 1e4, p = generative.coef))
-## lava::estimate(m.fit0, lava::sim(m.generative, n = 200, p = generative.coef))
 
 ## * simulation
 out <- calibrateType1(m.fit2, warmup = list(m.fit1), true.coef = generative.coef,

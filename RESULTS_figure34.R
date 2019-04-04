@@ -222,7 +222,7 @@ table.R1 <- table.R1[order(table.R1$n),]
 table.R1$n[duplicated(table.R1$n)] <- ""
 
 order.col <- c("parameter","n","ML","robust ML","GLS","WLS","IV (lava)","IV (lavaan)")
-print(xtable::xtable(table.R1[,.SD,.SDcols = order.col], label = "tab:comparison", caption = "Comparison of the type 1 error of Wald tests for various estimation methods in scenario (b) under a correctly specified model. No small sample correction is used. Robust ML corresponds to the use of robust Wald tests. NA indicates that the estimator never converged in the simulations and so the Wald statistic could not be computed. The R packages lava and MIIVsem were used for IV estimation. GLS and WLS were carried out using the R package lavaan.", digits = 3),
+print(xtable::xtable(table.R1[,.SD,.SDcols = order.col], label = "tab:comparison", caption = "Comparison of the type 1 error of Wald tests for various estimation methods in Scenario B under a correctly specified model. No small sample correction is used. Robust ML corresponds to the use of robust Wald tests. NA indicates that the estimator never converged in the simulations and so the Wald statistic could not be computed. The R packages lava and MIIVsem were used for IV estimation. GLS and WLS were carried out using the R package lavaan.", digits = 3),
       add.to.row =  addtorow, NA.string="NA",
       include.rownames = FALSE, booktabs = TRUE, sanitize.text.function = function(x){x})
 

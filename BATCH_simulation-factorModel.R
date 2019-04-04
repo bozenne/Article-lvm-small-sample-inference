@@ -34,7 +34,6 @@ if(dir.exists(path.output)==FALSE){
 library(lava)
 library(data.table)
 library(lavaSearch2)
-## devtools::load_all("lavaSearch2")
 
 ## * settings
 seqN <- c(20,30,50,75,100,150,200,300,500)
@@ -53,8 +52,6 @@ latent(m.generative) <- ~eta
 categorical(m.generative, labels = c("N","Y")) <- ~Gene1
 categorical(m.generative, labels = c("N","Y")) <- ~Gene2
 
-# plot(m.generative)
-
 ## ** fit model
 m.fit <- lvm(c(Y1~eta+Gene2,
                Y2~eta,
@@ -62,7 +59,6 @@ m.fit <- lvm(c(Y1~eta+Gene2,
                Y4~eta,
                eta~Age+Gene1))
 latent(m.fit) <- ~eta
-## lava::estimate(m.fit, lava::sim(m.generative, n = 1e5))
 
 ## ** true value of the coefficients
 if(FALSE){ ## create true.coef

@@ -33,7 +33,6 @@ if(dir.exists(path.output)==FALSE){
 ## * libraries
 library(lava)
 library(data.table)
-## devtools::load_all("lavaSearch2")
 library(lavaSearch2)
 
 ## * settings
@@ -54,8 +53,6 @@ categorical(m.generative, labels = c("N","Y")) <- ~Gene1
 categorical(m.generative, labels = c("N","Y")) <- ~Gene2
 categorical(m.generative, labels = c("F","M")) <- ~Gender
 
-## plot(m.generative)
-
 ## ** fit model
 m.fit <- lvm(c(Y1,Y2,Y3,Y4,Y5) ~ eta1,
              c(Z1,Z2,Z3,Z4,Z5) ~ eta2,
@@ -65,7 +62,6 @@ m.fit <- lvm(c(Y1,Y2,Y3,Y4,Y5) ~ eta1,
              eta1 ~ eta2)
 covariance(m.fit) <- Y1 ~ Y2 
 latent(m.fit) <- ~eta1+eta2
-## lava::estimate(m.fit, lava::sim(m.generative, n = 1e5))
 
 ## ** true value of the coefficients
 if(FALSE){ ## create true.coef
@@ -122,16 +118,6 @@ out <- calibrateType1(m.fit, true.coef = true.coef,
                       generative.object = m.generative, 
                       dir.save = path.res, label.file = iter_sim,
                       bootstrap = FALSE, seed = NULL, trace = 2)
-
-if(FALSE){
-    dd <- lava::sim(m.fit, n = 50, p = true.coef)
-    e <- estimate(m.fit, data = dd)
-    resManual <- sCorrect(e, numeric.derivative = FALSE, adjust.n = FALSE, adjust.Omega = FALSE)
-    resAuto <- sCorrect(e, numeric.derivative = TRUE, adjust.n = FALSE, adjust.Omega = FALSE)
-    ## resManual$Omega - resAuto$Omega
-    range(resManual$dVcov.param - resAuto$dVcov.param)
-    ## lavaSearch2:::sCorrect.lvmfit
-}
 
 ## * display
 print(sessionInfo())

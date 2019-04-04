@@ -32,9 +32,7 @@ if(FALSE){ ## check
 checkStud.MM <- fitStudent(dist.simulation$MM[n==20],
                            robust = FALSE,
                            seqLink = c("Y2","eta~Gene1Y"))
-##            se.empirical df.empirical mean.se  mean.df     Etype1   zdist.ksD   zdist.ksP   tdist.ksD tdist.ksP empirical.cv
-## Y2             1.002451     40.05616       1 36.66667 0.04990589 0.005125394 0.671417630 0.002773143 0.9979477            1
-## eta~Gene1Y     1.000285     17.51622       1 18.33333 0.05073593 0.012304592 0.004772889 0.005227591 0.6470836            1
+
 checkStud.robustMM <- fitStudent(dist.simulation$MM[n==20],
                                  robust = TRUE,
                                  seqLink = c("Y2","eta~Gene1Y"))
@@ -46,22 +44,11 @@ checkStud.factor <- fitStudent(dist.simulation$factor[n==20],
 checkStud.robustfactor <- fitStudent(dist.simulation$factor[n==20],
                                      robust = TRUE, 
                                      seqLink = c("Y2","Y1~Gene2Y","eta~Gene1Y","Y4~eta"))
-##            se.empirical df.empirical mean.se   mean.df     Etype1   zdist.ksD    zdist.ksP   tdist.ksD tdist.ksP empirical.cv
-## Y2             1.011918     13.37458       1  9.109677 0.04334795 0.011272646 0.0214109578 0.005728074 0.6014212            1
-## Y1~Gene2Y      1.072972     11.78926       1 17.079044 0.07333951 0.017429698 0.0000389385 0.005148592 0.7312556            1
-## eta~Gene1Y     1.098911     30.50346       1 10.547688 0.05296790 0.005983431 0.5450304413 0.004644723 0.8359059            1
-## Y4~eta         1.102288     13.28587       1  5.908417 0.04373144 0.015970947 0.0002217604 0.004426562 0.8754113            1
  
 checkStud.lvm <- fitStudent(dist.simulation$lvm[n==20],
                             robust = FALSE, value.max = 10,
                             seqLink = c("Y2","Y1~Gene2Y","eta1~Gene1Y","Y4~eta1","eta1~eta2","Y1~~Y2"))
-##             se.empirical df.empirical mean.se   mean.df      Etype1   zdist.ksD    zdist.ksP   tdist.ksD    tdist.ksP empirical.cv
-## Y2              1.026239     45.51837       1 10.134866 0.035484220 0.004698752 8.522322e-01 0.006209427 5.364922e-01            1
-## Y1~Gene2Y       1.105890     12.58122       1 17.112820 0.079633643 0.013727384 3.563666e-03 0.004140029 9.356818e-01            1
-## eta1~Gene1Y     1.151842     49.64642       1 10.116014 0.059151192 0.006272466 5.233694e-01 0.008955820 1.351804e-01            1
-## Y4~eta1         1.079896    145.93429       1  6.016163 0.025022858 0.007076476 3.695895e-01 0.007963097 2.372822e-01            1
-## eta1~eta2       1.127323 783296.70749       1  3.555492 0.009620592 0.017318024 8.456725e-05 0.017304210 8.593642e-05            1
-## Y1~~Y2          1.074020 934003.53085       1  7.813424 0.031081210 0.037587401 0.000000e+00 0.037568635 0.000000e+00            1
+
 checkStud.robustlvm <- fitStudent(dist.simulation$lvm[n==20],
                                   robust = TRUE, value.max = 10,
                                   seqLink = c("Y2","Y1~Gene2Y","eta1~Gene1Y","Y4~eta1","eta1~eta2","Y1~~Y2"))
@@ -84,9 +71,9 @@ row <- list(a = c("Y2","eta~Gene1Y"),
             c = c("Y2","Y1~Gene2Y","Y4~eta1","eta1~Gene1Y","eta1~eta2","Y1~~Y2"))
 
 ## ** Table non robust
-df.table1 <- rbind(cbind(scenario = "a", parameter = greek$a, as.data.frame(checkStud.MM[row$a,keep.col])),
-                   cbind(scenario = "b", parameter = greek$b, as.data.frame(checkStud.factor[row$b,keep.col])),
-                   cbind(scenario = "c", parameter = greek$c, as.data.frame(checkStud.lvm[row$c,keep.col]))
+df.table1 <- rbind(cbind(scenario = "A", parameter = greek$a, as.data.frame(checkStud.MM[row$a,keep.col])),
+                   cbind(scenario = "B", parameter = greek$b, as.data.frame(checkStud.factor[row$b,keep.col])),
+                   cbind(scenario = "C", parameter = greek$c, as.data.frame(checkStud.lvm[row$c,keep.col]))
                    )
 
 df.table1$scenario <- as.character(df.table1$scenario)
@@ -102,9 +89,9 @@ df.table1[duplicated(df.table1$scenario),"scenario"] <- ""
 
 addtorow <- list()
 addtorow$pos <- list(0,0,2,6)
-addtorow$command <- c("&&\\multicolumn{2}{c}{empirical Student} & \\multicolumn{2}{c}{modeled Student} & expected
+addtorow$command <- c("&&\\multicolumn{2}{c}{Empirical Student} & \\multicolumn{2}{c}{Modeled Student} & Expected
 & \\multicolumn{2}{c}{KS-test} \\\\ \\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){8-9} \n",
-"scenario & parameter & dispersion & df & dispersion & df & type 1 error & statistic & p-value  \\\\\n",
+"Scenario & parameter & dispersion & df & dispersion & df & type 1 error & statistic & p-value  \\\\\n",
 "[4mm] ","[4mm] ")
 print(xtable::xtable(df.table1,
                      label = "tab:validation",
@@ -121,9 +108,9 @@ print(xtable::xtable(df.table1,
       booktabs = TRUE)
 
 ## ** Table robust
-df.table2 <- rbind(cbind(scenario = "a", parameter = greek$a, as.data.frame(checkStud.robustMM[row$a,keep.col])),
-                   cbind(scenario = "b", parameter = greek$b, as.data.frame(checkStud.robustfactor[row$b,keep.col])),
-                   cbind(scenario = "c", parameter = greek$c, as.data.frame(checkStud.robustlvm[row$c,keep.col]))
+df.table2 <- rbind(cbind(scenario = "A", parameter = greek$a, as.data.frame(checkStud.robustMM[row$a,keep.col])),
+                   cbind(scenario = "B", parameter = greek$b, as.data.frame(checkStud.robustfactor[row$b,keep.col])),
+                   cbind(scenario = "C", parameter = greek$c, as.data.frame(checkStud.robustlvm[row$c,keep.col]))
                    )
 
 df.table2$scenario <- as.character(df.table2$scenario)
@@ -139,9 +126,9 @@ df.table2[duplicated(df.table2$scenario),"scenario"] <- ""
 
 addtorow <- list()
 addtorow$pos <- list(0,0,2,6)
-addtorow$command <- c("&&\\multicolumn{2}{c}{empirical Student} & \\multicolumn{2}{c}{modeled Student} & expected
+addtorow$command <- c("&&\\multicolumn{2}{c}{Empirical Student} & \\multicolumn{2}{c}{Modeled Student} & Expected
 & \\multicolumn{2}{c}{KS-test} \\\\ \\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){8-9} \n",
-"scenario & parameter & se & df & se & df & type 1 error & statistic & p-value  \\\\\n",
+"Scenario & parameter & se & df & se & df & type 1 error & statistic & p-value  \\\\\n",
 "[4mm] ","[4mm] ")
 print(xtable::xtable(df.table2,
                      label = "tab:robustvalidation",
