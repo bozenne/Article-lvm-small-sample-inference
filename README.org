@@ -1,6 +1,5 @@
 This directory contains the R code used to generate the results
-presented in the article: "Small Sample Maximum Likelihood Inference
-in Latent Variable Models". It is organized as follows:
+presented in the article: "Small sample corrections for Wald tests in Latent Variable Models". It is organized as follows:
 - *the BATCH files* define the simulation studies. Each file was
   excecuted 40 times using a different id (obtain using
   =Sys.getenv("SGE_TASK_ID")= in R) and therefore a different seed
