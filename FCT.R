@@ -3,9 +3,9 @@
 ## Author: Brice Ozenne
 ## Created: jan 17 2019 (14:14) 
 ## Version: 
-## Last-Updated: jul 26 2019 (09:58) 
+## Last-Updated: nov  7 2019 (13:20) 
 ##           By: Brice Ozenne
-##     Update #: 112
+##     Update #: 120
 ##----------------------------------------------------------------------
 ## 
 ### Commentary: 
@@ -15,10 +15,63 @@
 ## 
 ### Code:
 
+## * labels
+greek.label.MM <- c(eta = expression(paste(eta, "   (within)")),
+                    Y2 = expression(paste(nu[2], "   (within)")),
+                    Y3 = expression(paste(nu[3], "   (within)")),
+                    "eta~Gene1Y" = expression(paste(gamma[1], "   (between)")),
+                    "eta~Age" = expression(paste(gamma[2], "   (between)")))
+
+greek.label.factor <- c("eta" = expression(paste(eta, "   (intercept)")),
+                        "Y2" = expression(paste(nu[2], "   (intercept)")),
+                        "Y3" = expression(paste(nu[3], "   (intercept)")),
+                        "Y4" = expression(paste(nu[4], "   (intercept)")),
+                        "Y1~Gene2Y" = expression(paste(k[1], "   (reg. OV~OV)")),
+                        "eta~Gene1Y" = expression(paste(gamma[1], "   (reg. LV~OV)")),
+                        "eta~Age" = expression(paste(gamma[2], "   (reg. LV~OV)")),
+                        "Y2~eta" = expression(paste(lambda[2], "   (loading)")),
+                        "Y3~eta" = expression(paste(lambda[3], "   (loading)")),
+                        "Y4~eta" = expression(paste(lambda[4], "   (loading)"))
+                        )
+
+greek.label.lvm <- c(Y2 = expression(paste(nu[2], "   (intercept)")),
+                     Y3 = expression(paste(nu[3], "   (intercept)")),
+                     Y4 = expression(paste(nu[4], "   (intercept)")),
+                     Y5 = expression(paste(nu[5], "   (intercept)")),
+                     eta1 = expression(paste(eta[1], "   (intercept)")),
+                     Z2 = expression(paste(Z[2], "   (intercept)")),
+                     Z3 = expression(paste(Z[3], "   (intercept)")),
+                     Z4 = expression(paste(Z[4], "   (intercept)")),
+                     Z5 = expression(paste(Z[5], "   (intercept)")),
+                     eta = expression(paste(eta[2], "   (intercept)")),
+                     "Y1~Gene2Y" = expression(paste(k[1], "   (reg. OV~OV)")),
+                     "Y2~eta1" = expression(paste(lambda[2], "   (loading)")),
+                     "Y3~eta1" = expression(paste(lambda[3], "   (loading)")),
+                     "Y4~eta1" = expression(paste(lambda[4], "   (loading)")),
+                     "Y5~eta1" = expression(paste(lambda[5], "   (loading)")),
+                     "eta1~eta2" = expression(paste(b[1], "   (reg. on LV~LV)")),
+                     "eta1~Age" = expression(paste(gamma[2], "   (reg. OV~LV)")),
+                     "eta1~Gene1Y" = expression(paste(gamma[1], "   (reg. OV~LV)")),
+                     "Z2~eta1" = expression(paste(lambda[6], "   (loading)")),
+                     "Z3~eta1" = expression(paste(lambda[7], "   (loading)")),
+                     "Z4~eta1" = expression(paste(lambda[8], "   (loading)")),
+                     "Z5~eta1" = expression(paste(lambda[9], "   (loading)")),
+                     "eta2~Gender" = expression(paste(gamma[3], "   (reg. OV~LV)")),
+                     "Y1~~Y2" = expression(paste(sigma[12], "   (covariance)"))
+                     )
+
+label.statistic <- c( 
+    Ztest = "standard procedure",
+    Satt = "Satterthwaite approx.",
+    SSC = "bias correction",
+    KR = "Satterthwaite approx. with bias correction"
+)
+name.statistic <- names(label.statistic)
+n.statistic <- length(name.statistic)
+
 ## * sinkDirectory
 sinkDirectory <- function (path, string.keep = NULL, string.exclude = NULL, addMissingCol = FALSE, 
-                           fixed = FALSE, trace = TRUE) 
-{
+                           fixed = FALSE, trace = TRUE){
     if (!dir.exists(path)) {
         possible.dirs <- setdiff(list.dirs(file.path(path, ".."), 
                                            full.names = FALSE), "")
@@ -221,8 +274,11 @@ groupFigures <- function(figure1, figure2, figure3, reduce.x = TRUE){
 
 
 ## * createTable
-createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
+createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE,
+                        column = c("ML","ML-corrected")){
 
+    column <- match.arg(column, choices = c("ML","ML-corrected"), several.ok = TRUE)
+    
     reformat <- function(value, digit){ ## value <- 0 ; digit = 2
         value.round <- round(value, digits = digit)
         vec <- format(value.round, nsmall = digit)
@@ -233,7 +289,7 @@ createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
     }
     ## reformat(0, digit = 2)
 
-
+    
     
     tab1 <- dt[(corrected == FALSE) & (type %in% seqType),
                .("mean (sd)"=paste0(reformat(mean, digit = digit)," (",reformat(sd, digit = digit),")"),
@@ -251,8 +307,14 @@ createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
     n.n <- length(seqN)
     tab.tex <- NULL
     for(iN in 1:n.n){ ## iN <- 1
-        iTab <- cbind(tab1[n==seqN[iN],],
-                      tab2[n==seqN[iN],.SD,.SDcols = setdiff(names(tab2),c("n","type"))])
+
+        iTab <- tab1[n==seqN[iN],.(n,type)]
+        if("ML" %in% column){
+            iTab <- cbind(iTab,tab1[n==seqN[iN],.SD,.SDcols = setdiff(names(tab1),c("n","type"))])
+        }
+        if("ML-corrected" %in% column){
+            iTab <- cbind(iTab,tab2[n==seqN[iN],.SD,.SDcols = setdiff(names(tab2),c("n","type"))])
+        }
 
         ## only keep first n
         iTab[, "n" := NULL]
@@ -271,9 +333,24 @@ createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
         
             ## add column title
             if(iN==1){
-                iTab.tex <- c(paste("& & ",paste(names(iTab)[-(1:2)],collapse=" & "),"\\\\ \\hline \n"),
+                keep.col <- NULL
+                if("ML" %in% column){
+                    keep.col <- c(keep.col,names(iTab)[3:4])
+                }
+                if("ML-corrected" %in% column){
+                    keep.col <- c(keep.col,names(iTab)[5:6])
+                }
+                iTab.tex <- c(paste("& & ",paste(keep.col,collapse=" & "),"\\\\ \\hline \n"),
                               iTab.tex)
-                iTab.tex <- c("\\multirow{2}{*}{sample size} & \\multirow{2}{*}{type} & \\multicolumn{2}{c}{ML} & \\multicolumn{2}{c}{ML-corrected} \\\\ \n",
+                firstLine <- "\\multirow{2}{*}{type} & \\multirow{2}{*}{sample size} "
+                if("ML" %in% column){
+                    firstLine <- c(firstLine, "& \\multicolumn{2}{c}{ML} ")
+                }
+                if("ML-corrected" %in% column){
+                    firstLine <- c(firstLine, "& \\multicolumn{2}{c}{ML-corrected} ")
+                }
+                firstLine <- c(firstLine,"\\\\ \n")
+                iTab.tex <- c(firstLine,
                               iTab.tex)
             }
             tab.tex <- c(tab.tex, iTab.tex)
@@ -281,6 +358,7 @@ createTable <- function(dt, seqN, seqType, digit, convert2latex = TRUE){
             tab.tex <- rbind(tab.tex, iTab)
         }
     }
+
     ## wrap in tabular envir
     if(convert2latex){
         tab.tex <- c("\\begin{tabular}{c|c|cccc} \n",

@@ -1,142 +1,112 @@
 path.results <- "./Results"
-path.data <- "./data/"
 
+## * packages
 library(data.table)
-source("FCT.R") ## get function fitStudent
 
-path.simulation.mixedModel <- "./Results/simulation-mixedModel"
-path.simulation.factorModel <- "./Results/simulation-factorModel"
-path.simulation.lvm <- "./Results/simulation-lvm"
+## * Import
 
+## ** Simulation results
+dttype1.ill.mm <- readRDS(file.path(path.results, "type1error-illustration-mixedModel.rds"))
+dttype1.ill.factor <- readRDS(file.path(path.results, "type1error-illustration-factorModel.rds"))
+dttype1.ill.lvm <- readRDS(file.path(path.results, "type1error-illustration-lvmModel.rds"))
 
-## * load data
-dist.simulation <- readRDS(file.path(path.results,"dist-simulation.rds"))
+## ** Real data
+source("ANALYSIS.R")
 
-## * fit distributions
-if(FALSE){ ## check
-    set.seed(10)
-    dt.test <- rbind(data.table(name = "rt", estimate.MLcorrected = rt(1e3, df = 3), se.MLcorrected = 1, df.MLcorrected = 3),
-                     data.table(name = "rnorm", estimate.MLcorrected = rnorm(1e3), se.MLcorrected = 1, df.MLcorrected = Inf),
-                     data.table(name = "runif", estimate.MLcorrected = runif(1e3), se.MLcorrected = 1, df.MLcorrected = NA))
-    fitStudent(dt.test, robust = FALSE)
-    ##       se.empirical df.empirical mean.se mean.df     Etype1  zdist.ksD    zdist.ksP  tdist.ksD    tdist.ksP empirical.cv
-    ## rt       1.0243040 3.061981e+00       1       3 0.05157778 0.07855195 8.739392e-06 0.03930024 9.108476e-02            1
-    ## rnorm    0.9802015 4.408587e+01       1     Inf 0.05173461 0.02132348 7.534688e-01 0.01818344 8.955425e-01            1
-    ## runif    0.2918500 2.455879e+07       1     NaN        NaN 0.07207078 6.157547e-05 0.07218601 5.956193e-05            1
+## * Application A
+treatment.null <- c("$k_1,k_2,k_3$")
+M.tab1a <- matrix(NA, nrow = 1, ncol = 8,
+                  dimnames = list(treatment.null,as.vector(sapply(c("ML","MLc"),paste,c("sigma","df","p-value","type1"),sep =".")))
+                  )
+df.tab1a <- as.data.frame(M.tab1a)
 
-}
+df.tab1a[treatment.null,"ML.df"] <- "$\\infty$"
+df.tab1a[treatment.null,"ML.p-value"] <- Ftest.vitamin.ML$p.value
+df.tab1a[treatment.null,"ML.type1"] <- dttype1.ill.mm[link == "global" & method == "p.Ztest",type1]
 
-checkStud.MM <- fitStudent(dist.simulation$MM[n==20],
-                           robust = FALSE,
-                           seqLink = c("Y2","eta~Gene1Y"))
+df.tab1a[treatment.null,"MLc.df"] <- Ftest.vitamin.MLc$parameter
+df.tab1a[treatment.null,"MLc.p-value"] <- Ftest.vitamin.MLc$p.value
+df.tab1a[treatment.null,"MLc.type1"] <- dttype1.ill.mm[link == "global" & method == "p.KR",type1]
 
-checkStud.robustMM <- fitStudent(dist.simulation$MM[n==20],
-                                 robust = TRUE,
-                                 seqLink = c("Y2","eta~Gene1Y"))
+df.tab1a.print <- df.tab1a
+df.tab1a.print[,c("ML.sigma","MLc.sigma")] <- ""
+df.tab1a.print[,c("MLc.df")] <- round(df.tab1a[,c("MLc.df")],1)
+df.tab1a.print[,c("ML.p-value")] <- paste0("\\num{",formatC(df.tab1a[,c("ML.p-value")], format = "e", digits = 2),"}")
+df.tab1a.print[,c("MLc.p-value")] <- paste0("\\num{",formatC(df.tab1a[,c("MLc.p-value")], format = "e", digits = 2),"}")
+df.tab1a.print[,c("ML.type1","MLc.type1")] <- sapply(round(100*df.tab1a[,c("ML.type1","MLc.type1")],2),paste0,"\\%")
 
-checkStud.factor <- fitStudent(dist.simulation$factor[n==20],
-                               robust = FALSE,
-                               seqLink = c("Y2","Y1~Gene2Y","eta~Gene1Y","Y4~eta"))
+df.tab1a.print <- cbind(cbind(treatment.null,df.tab1a.print))
+names(df.tab1a.print) <- c("parameter",
+                           "\\(\\sigma\\)","\\(\\df\\)","p-value","type 1 error",
+                           "\\(\\sigma\\)","\\(\\df\\)","p-value","type 1 error")
 
-checkStud.robustfactor <- fitStudent(dist.simulation$factor[n==20],
-                                     robust = TRUE, 
-                                     seqLink = c("Y2","Y1~Gene2Y","eta~Gene1Y","Y4~eta"))
- 
-checkStud.lvm <- fitStudent(dist.simulation$lvm[n==20],
-                            robust = FALSE, value.max = 10,
-                            seqLink = c("Y2","Y1~Gene2Y","eta1~Gene1Y","Y4~eta1","eta1~eta2","Y1~~Y2"))
+## * Application B
+M.tab1b <- matrix(NA, nrow = 2, ncol = 8,
+                dimnames = list(bdnf.null,as.vector(sapply(c("ML","MLc"),paste,c("sigma","df","p-value","type1"),sep =".")))
+                )
+df.tab1b <- as.data.frame(M.tab1b)
+df.tab1b[,c("ML.sigma","ML.p-value")] <- summary(e.bdnf2, robust = TRUE)$coef[bdnf.null,c("Robust SE","P-value")]
+df.tab1b[,c("ML.df")] <- "$\\infty$"
+df.tab1b["u~bdnf2mx","ML.type1"] <- dttype1.ill.factor[link == "u~bdnf2" & method == "p.robustZtest",.(typeML=type1)]  
+df.tab1b["neo~httlpr2sx","ML.type1"] <- dttype1.ill.factor[link == "neo~httlpr2" & method == "p.robustZtest",.(typeML=type1)]  
 
-checkStud.robustlvm <- fitStudent(dist.simulation$lvm[n==20],
-                                  robust = TRUE, value.max = 10,
-                                  seqLink = c("Y2","Y1~Gene2Y","eta1~Gene1Y","Y4~eta1","eta1~eta2","Y1~~Y2"))
+df.tab1b[,c("MLc.sigma","MLc.df","MLc.p-value")] <- summary2(e.bdnf2, robust = TRUE)$coef[bdnf.null,c("robust SE","df","P-value")]
+df.tab1b["u~bdnf2mx","MLc.type1"] <- dttype1.ill.factor[link == "u~bdnf2" & method == "p.robustKR",.(typeML=type1)]  
+df.tab1b["neo~httlpr2sx","MLc.type1"] <- dttype1.ill.factor[link == "neo~httlpr2" & method == "p.robustKR",.(typeML=type1)]  
 
-dt_gghist <- dist.simulation$lvm[n==20 & name %in% c("eta1~eta2","Y1~~Y2"), .(wald = na.omit(estimate.MLcorrected/se.MLcorrected)), by = "name"]
+df.tab1b.print <- df.tab1b
+df.tab1b.print[,c("ML.sigma","MLc.sigma")] <- round(df.tab1b[,c("ML.sigma","MLc.sigma")],3)
+df.tab1b.print[,c("MLc.df")] <- round(df.tab1b[,c("MLc.df")],1)
+df.tab1b.print[,c("ML.p-value")] <- paste0("\\num{",formatC(df.tab1b[,c("ML.p-value")], format = "e", digits = 2),"}")
+df.tab1b.print[,c("MLc.p-value")] <- paste0("\\num{",formatC(df.tab1b[,c("MLc.p-value")], format = "e", digits = 2),"}")
+df.tab1b.print[,c("ML.type1","MLc.type1")] <- sapply(round(100*df.tab1b[,c("ML.type1","MLc.type1")],2),paste0,"\\%")
 
-## gg_hist <- ggplot(dt_gghist, aes(x = wald))
-## gg_hist <- gg_hist + geom_histogram(bins = 100, aes(y=..density..), color = "red") + facet_wrap(~name)
-## gg_hist <- gg_hist + stat_function(fun = dnorm, n = 101, args = list(mean = 0, sd = 1.1), size = 2)
+df.tab1b.print <- cbind(cbind(names(bdnf.null),df.tab1b.print))
+names(df.tab1b.print) <- c("parameter",
+                           "\\(\\sigma\\)","\\(\\df\\)","p-value","type 1 error",
+                           "\\(\\sigma\\)","\\(\\df\\)","p-value","type 1 error")
 
+## * Application C
+M.tab1c <- matrix(NA, nrow = 3, ncol = 8,
+                  dimnames = list(memory.null,as.vector(sapply(c("ML","MLc"),paste,c("sigma","df","p-value","type1"),sep =".")))
+                  )
+df.tab1c <- as.data.frame(M.tab1c)
+df.tab1c[,c("ML.sigma","ML.p-value")] <- summary(e.memory)$coef[memory.null,c("Std. Error","P-value")]
+df.tab1c[,c("ML.df")] <- "$\\infty$"
+df.tab1c[memory.null[1],"ML.type1"] <- dttype1.ill.lvm[link == memory.null[1] & method == "p.Ztest",.(typeML=type1)]  
+df.tab1c[memory.null[2],"ML.type1"] <- dttype1.ill.lvm[link == memory.null[2] & method == "p.Ztest",.(typeML=type1)]  
+df.tab1c[memory.null[3],"ML.type1"] <- dttype1.ill.lvm[link == memory.null[3] & method == "p.Ztest",.(typeML=type1)]  
 
-rm.col <- c("empirical.cv","zdist.ksD","zdist.ksP")
-keep.col <- setdiff(colnames(checkStud.MM),rm.col)
+df.tab1c[,c("MLc.sigma","MLc.df","MLc.p-value")] <- summary2(e.memory)$coef[memory.null,c("Std. Error","df","P-value")]
+df.tab1c[memory.null[1],"MLc.type1"] <- dttype1.ill.lvm[link == memory.null[1] & method == "p.KR",.(typeML=type1)]  
+df.tab1c[memory.null[2],"MLc.type1"] <- dttype1.ill.lvm[link == memory.null[2] & method == "p.KR",.(typeML=type1)]  
+df.tab1c[memory.null[3],"MLc.type1"] <- dttype1.ill.lvm[link == memory.null[3] & method == "p.KR",.(typeML=type1)]  
 
-greek <- list(a = c("$\\nu_2$","$\\gamma_1$"),
-              b = c("$\\nu_2$","$\\lambda_4$","$\\gamma_1$","$k_1$"),
-              c = c("$\\nu_2$","$k_1$","$\\lambda_4$","$\\gamma_1$","$b_1$","$\\sigma_{12}$"))
-row <- list(a = c("Y2","eta~Gene1Y"),
-            b = c("Y2","Y4~eta","eta~Gene1Y","Y1~Gene2Y"),
-            c = c("Y2","Y1~Gene2Y","Y4~eta1","eta1~Gene1Y","eta1~eta2","Y1~~Y2"))
+df.tab1c.print <- df.tab1c
+df.tab1c.print[,c("ML.sigma","MLc.sigma")] <- round(df.tab1c[,c("ML.sigma","MLc.sigma")],3)
+df.tab1c.print[,c("MLc.df")] <- round(df.tab1c[,c("MLc.df")],1)
+df.tab1c.print[,c("ML.p-value")] <- paste0("\\num{",formatC(df.tab1c[,c("ML.p-value")], format = "e", digits = 2),"}")
+df.tab1c.print[,c("MLc.p-value")] <- paste0("\\num{",formatC(df.tab1c[,c("MLc.p-value")], format = "e", digits = 2),"}")
+df.tab1c.print[,c("ML.type1","MLc.type1")] <- sapply(round(100*df.tab1c[,c("ML.type1","MLc.type1")],2),paste0,"\\%")
 
-## ** Table non robust
-df.table1 <- rbind(cbind(scenario = "A", parameter = greek$a, as.data.frame(checkStud.MM[row$a,keep.col])),
-                   cbind(scenario = "B", parameter = greek$b, as.data.frame(checkStud.factor[row$b,keep.col])),
-                   cbind(scenario = "C", parameter = greek$c, as.data.frame(checkStud.lvm[row$c,keep.col]))
-                   )
+df.tab1c.print <- cbind(cbind(names(memory.null),df.tab1c.print))
+names(df.tab1c.print) <- c("parameter",
+                           "\\(\\sigma\\)","\\(\\df\\)","p-value","type 1 error",
+                           "\\(\\sigma\\)","\\(\\df\\)","p-value","type 1 error")
 
-df.table1$scenario <- as.character(df.table1$scenario)
-rownames(df.table1) <- NULL
-df.table1$se.empirical <- formatC(round(df.table1$se.empirical, digits = 3), format = "f", digits = 3)
-df.table1$df.empirical <- formatC(round(df.table1$df.empirical, digits = 1), format = "f", digits = 1)
-df.table1$mean.se <- formatC(round(df.table1$mean.se, digits = 3), format = "f", digits = 0)
-df.table1$mean.df <- formatC(round(df.table1$mean.df, digits = 1), format = "f", digits = 1)
-df.table1$Etype1 <- formatC(round(df.table1$Etype1, digits = 3), format = "f", digits = 3)
-df.table1$tdist.ksD <- formatC(round(df.table1$tdist.ksD, digits = 3), format = "f", digits = 3)
-df.table1$tdist.ksP <- format.pval(df.table1$tdist.ksP, digits = 3, eps = 1e-3)
-df.table1[duplicated(df.table1$scenario),"scenario"] <- ""
+## * Table 1
+df.tab1.print <- rbind(cbind(Application = "A",df.tab1a.print,"x" = "\\\\"),
+                       cbind(Application = "B",df.tab1b.print,"x" = "\\\\"),
+                       cbind(Application = "C",df.tab1c.print,"x" = "\\\\"))
+df.tab1.print$x <- as.character(df.tab1.print$x)
+df.tab1.print$Application <- as.character(df.tab1.print$Application)
+df.tab1.print$Application[duplicated(df.tab1.print$Application)] <- " "
+df.tab1.print[c(1,3),"x"] <- paste0(df.tab1.print[c(1,3),"x"]," [0.5cm]")
 
-addtorow <- list()
-addtorow$pos <- list(0,0,2,6)
-addtorow$command <- c("&&\\multicolumn{2}{c}{Empirical Student} & \\multicolumn{2}{c}{Modeled Student} & Expected
-& \\multicolumn{2}{c}{KS-test} \\\\ \\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){8-9} \n",
-"Scenario & parameter & dispersion & df & dispersion & df & type 1 error & statistic & p-value  \\\\\n",
-"[4mm] ","[4mm] ")
-print(xtable::xtable(df.table1,
-                     label = "tab:validation",
-                     caption = paste("Comparison between the empirical distribution of the Wald statistic vs. the modeled distribution (after correction) for n=20. ",
-                                     "Empirical Student: standard error and degrees of freedom of a non-standardized Student's t-distribution fitted to the empirical distribution.",
-                                     "Modeled Student: average estimated degrees of freedom over the simulations.",
-                                     "Expected type 1 error: rejection rate under the empirical Student when using the 2.5 and 97.5\\% quantile of the modeled Student.",
-                                     "Kolmogorov Smirnov test: comparison between the empirical cumluative distribution function (cdf) and the cdf of the empirical Student."),
-                     ),
-      add.to.row =  addtorow,
-      include.colnames = FALSE,
-      include.rownames=FALSE,
-      sanitize.text.function = function(x){x},
-      booktabs = TRUE)
-
-## ** Table robust
-df.table2 <- rbind(cbind(scenario = "A", parameter = greek$a, as.data.frame(checkStud.robustMM[row$a,keep.col])),
-                   cbind(scenario = "B", parameter = greek$b, as.data.frame(checkStud.robustfactor[row$b,keep.col])),
-                   cbind(scenario = "C", parameter = greek$c, as.data.frame(checkStud.robustlvm[row$c,keep.col]))
-                   )
-
-df.table2$scenario <- as.character(df.table2$scenario)
-rownames(df.table2) <- NULL
-df.table2$se.empirical <- as.character(round(df.table2$se.empirical, digits = 3))
-df.table2$df.empirical <- as.character(round(df.table2$df.empirical, digits = 1))
-df.table2$mean.se <- as.character(round(df.table2$mean.se, digits = 3))
-df.table2$mean.df <- as.character(round(df.table2$mean.df, digits = 1))
-df.table2$Etype1 <- as.character(round(df.table2$Etype1, digits = 3))
-df.table2$tdist.ksD <- as.character(round(df.table2$tdist.ksD, digits = 3))
-df.table2$tdist.ksP <- format.pval(df.table2$tdist.ksP, digits = 3, eps = 1e-3)
-df.table2[duplicated(df.table2$scenario),"scenario"] <- ""
-
-addtorow <- list()
-addtorow$pos <- list(0,0,2,6)
-addtorow$command <- c("&&\\multicolumn{2}{c}{Empirical Student} & \\multicolumn{2}{c}{Modeled Student} & Expected
-& \\multicolumn{2}{c}{KS-test} \\\\ \\cmidrule(lr){3-4} \\cmidrule(lr){5-6} \\cmidrule(lr){8-9} \n",
-"Scenario & parameter & se & df & se & df & type 1 error & statistic & p-value  \\\\\n",
-"[4mm] ","[4mm] ")
-print(xtable::xtable(df.table2,
-                     label = "tab:robustvalidation",
-                     caption = paste("Comparison between the empirical distribution of the robust Wald statistic vs. the modeled distribution (after correction) for n=20. ",
-                                     "Empirical Student: standard error and degrees of freedom of a Student's t-distribution fitted on the empirical distribution.",
-                                     "Modeled Student: average estimated degrees of freedom over the simulations.",
-                                     "Expected type 1 error: rejection rate under the empirical Student when using the 2.5 and 97.5\\% quantile of the modeled Student.",
-                                     "Kolmogorov Smirnov test: comparison between the empirical cumluative distribution function (cdf) and the cdf of the empirical Student."),
-                     ),
-      add.to.row =  addtorow,
-      include.colnames = FALSE,
-      include.rownames=FALSE,
-      sanitize.text.function = function(x){x},
-      booktabs = TRUE)
+cat("\n",apply(df.tab1.print,1,function(x){paste(paste(x, collapse =  " & "),"\n")}))
+ ## A & $k_1,k_2,k_3$ &  & $\infty$ & \num{1.76e-03} & 10.22\% &  & 49.1 & \num{1.23e-02} & 4.49\% & \\ [0.5cm] 
+ ## B & $\gamma_2$ & 0.026 & $\infty$ & \num{5.11e-03} & 7.41\% & 0.027 & 65.4 & \num{9.03e-03} & 5.59\% & \\ 
+ ##   & $k_1$ & 0.016 & $\infty$ & \num{7.23e-06} & 6.14\% & 0.017 & 67.5 & \num{4.80e-05} & 4.78\% & \\ [0.5cm] 
+ ## C & $b_1$ & 2.106 & $\infty$ & \num{5.45e-04} & 6.32\% & 2.143 & 13.5 & \num{4.53e-03} & 2.02\% & \\ 
+ ##   & $b_2$ & 2.355 & $\infty$ & \num{4.21e-03} & 8.5\% & 2.429 & 10.0 & \num{1.96e-02} & 3.71\% & \\ 
+ ##   & $b_3$ & 2.041 & $\infty$ & \num{7.20e-02} & 8.41\% & 2.13 &  7.7 & \num{1.24e-01} & 3.42\% & \\ 

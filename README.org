@@ -24,9 +24,9 @@ presented in the article: "Small sample corrections for Wald tests in Latent Var
   errror rate is then computed and exported in
   =Results/type1error-illustration-mixedModel.rds=. The bias of the
   estimates is also computed and exported in
-  =Results/bias-simulation-mixedModel=. The file =RESULTS_figure34.R=
+  =Results/bias-simulation-mixedModel=. The file =RESULTS_figure4.R=
   uses =Results/type1error-illustration-mixedModel.rds= to produce
-  figure 3.
+  figure 4.
 
 
 * More details on the BATCH files
@@ -56,21 +56,3 @@ presented in the article: "Small sample corrections for Wald tests in Latent Var
   misspecified models (e.g. residuals non normally distributed,
   misspecified covariance structure). The results are not reported in
   the manuscript but are available upon request.
-
-* More details on the RESULTS files
-- =RESULTS_mixedModel.R= this file generates table 2 (main manuscript)
-  figures S1 (supplementary material) and the results for section 8.1
-  and 9.1.
-- =RESULTS_factorModel.R=: this file generates the results for section
-  8.2 and 9.2. Only the part relative to section 8.2 can be run since
-  we cannot make clinical data publicly available.
-- =RESULTS_lvm=: this file generates the results for section 8.3 and
-  9.3.  Only the part relative to section 8.3 can be run since we
-  cannot make clinical data publicly available.
-- =RESULTS_figure34.R=: this file generates figures 3 and 4 (main
-  manuscript), as well as table S4 (supplementary material).
-- =RESULTS_table1.R=: this file generates table 1 (main
-  manuscript). It cannot be run because the data =dist-simulation.rds=
-  is too large (358 MB) to be uploaded on the Github repository. The
-  file is available upon request.
-- =RESULTS_tableS1S2S3.R=: this file generates tables S1, S2, S3 (supplementary material).
