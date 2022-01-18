@@ -54,11 +54,13 @@ coef.vitamin.ML <- coef(vitamin.ML)
 Ftest.vitamin.ML <- lava::compare(vitamin.ML, par = c("w5~grpT","w6~grpT","w7~grpT")) ## 15.072/3
 
 ## ** Small sample correction
-sCorrect(vitamin.ML) <- TRUE
-
+if(packageVersion("lavaSearch2")>="2.0.0"){
+    Ftest.vitamin.MLc <- compare2(vitamin.ML, linfct = c("w5~grpT","w6~grpT","w7~grpT")) ## 15.072/3
+}else{
+    sCorrect(vitamin.ML) <- TRUE
+    Ftest.vitamin.MLc <- compare2(vitamin.ML, par = c("w5~grpT","w6~grpT","w7~grpT")) ## 15.072/3
+}
 coef.vitamin.MLc <- vitamin.ML$sCorrect$param
-
-Ftest.vitamin.MLc <- compare2(vitamin.ML, par = c("w5~grpT","w6~grpT","w7~grpT")) ## 15.072/3
 
 ## * Application B
 
@@ -131,7 +133,11 @@ coef.bdnf.ML <- coef(e.bdnf2)
 
 
 ## ** Small sample correction
-sCorrect(e.bdnf2) <- TRUE
+if(packageVersion("lavaSearch2")>="2.0.0"){
+    sCorrect(e.bdnf2) <- TRUE
+}else{
+    e.bdnf2 <- estimate2(e.bdnf2)
+}
 coef.bdnf.MLc <- e.bdnf2$sCorrect$param
 
 ## ** Permutation test [not in the article]
@@ -284,5 +290,9 @@ memory.null <- c('$b_1$' = 'm.pos~u', '$b_2$' = 'm.neu~u', '$b_3$' = 'm.neg~u')
 coef.memory.ML <- coef(e.memory)
 
 ## ** small sample correction
-sCorrect(e.memory) <- TRUE
+if(packageVersion("lavaSearch2")>="2.0.0"){
+    e.memory <- estimate2(e.memory)
+}else{
+    sCorrect(e.memory) <- TRUE
+}
 coef.memory.MLc <- e.memory$sCorrect$param

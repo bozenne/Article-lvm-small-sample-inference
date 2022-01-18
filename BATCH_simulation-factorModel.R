@@ -107,55 +107,42 @@ if(FALSE){
     names(ls.lvmfit) <- seqN
 
     ## algo 2
-    speedFactor <- microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]]),
-                                                  "30" = sCorrect(ls.lvmfit[["30"]]),
-                                                  "50" = sCorrect(ls.lvmfit[["50"]]),
-                                                  "75" = sCorrect(ls.lvmfit[["75"]]),
-                                                  "100" = sCorrect(ls.lvmfit[["100"]]),
-                                                  "150" = sCorrect(ls.lvmfit[["150"]]),
-                                                  "200" = sCorrect(ls.lvmfit[["200"]]),
-                                                  "300" = sCorrect(ls.lvmfit[["300"]]),
-                                                  "500" = sCorrect(ls.lvmfit[["500"]]),
-                                                  times = 50
-                                                  )
+    if(packageVersion("lavaSearch2")>="2.0.0"){
+        speedFactor <- microbenchmark::microbenchmark("20" = estimate2(ls.lvmfit[["20"]]),
+                                                      "30" = estimate2(ls.lvmfit[["30"]]),
+                                                      "50" = estimate2(ls.lvmfit[["50"]]),
+                                                      "75" = estimate2(ls.lvmfit[["75"]]),
+                                                      "100" = estimate2(ls.lvmfit[["100"]]),
+                                                      "150" = estimate2(ls.lvmfit[["150"]]),
+                                                      "200" = estimate2(ls.lvmfit[["200"]]),
+                                                      "300" = estimate2(ls.lvmfit[["300"]]),
+                                                      "500" = estimate2(ls.lvmfit[["500"]]),
+                                                      times = 50
+                                                      )
+    }else{
+        speedFactor <- microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]]),
+                                                      "30" = sCorrect(ls.lvmfit[["30"]]),
+                                                      "50" = sCorrect(ls.lvmfit[["50"]]),
+                                                      "75" = sCorrect(ls.lvmfit[["75"]]),
+                                                      "100" = sCorrect(ls.lvmfit[["100"]]),
+                                                      "150" = sCorrect(ls.lvmfit[["150"]]),
+                                                      "200" = sCorrect(ls.lvmfit[["200"]]),
+                                                      "300" = sCorrect(ls.lvmfit[["300"]]),
+                                                      "500" = sCorrect(ls.lvmfit[["500"]]),
+                                                      times = 50
+                                                      )
+    }
     saveRDS(speedFactor, file = file.path("Results","speed-Algo2-Factor.rds"))
- ##    Unit: milliseconds
- ## expr      min       lq     mean   median       uq      max neval cld
- ##   20 153.4920 165.4882 167.9470 168.0757 173.8985 181.4775    50 b
- ##   30 139.3625 143.3120 153.0009 154.8625 156.3171 176.4130    50 a
- ##   50 140.7812 143.2224 155.0999 155.5626 157.3227 193.3208    50 a
- ##   75 154.9952 170.4748 174.3150 174.5028 180.2789 210.7192    50 b
- ##  100 170.1527 183.2981 192.2278 186.0499 195.3349 389.3620    50 c
- ##  150 175.7185 189.7478 195.4327 194.0275 202.5155 223.1499    50 c
- ##  200 202.3027 215.0806 220.8639 220.7766 225.8146 252.8478    50 d
- ##  300 262.3011 266.8939 272.6470 271.2441 275.5871 292.8013    50 e
- ##  500 360.1440 371.8377 384.6029 380.2178 390.5027 556.9517    50 f
-
-
-    ## algo 1
-    microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]], adjust.n = FALSE),
-                                   "30" = sCorrect(ls.lvmfit[["30"]], adjust.n = FALSE),
-                                   "50" = sCorrect(ls.lvmfit[["50"]], adjust.n = FALSE),
-                                   "75" = sCorrect(ls.lvmfit[["75"]], adjust.n = FALSE),
-                                   "100" = sCorrect(ls.lvmfit[["100"]], adjust.n = FALSE),
-                                   "150" = sCorrect(ls.lvmfit[["150"]], adjust.n = FALSE),
-                                   "200" = sCorrect(ls.lvmfit[["200"]], adjust.n = FALSE),
-                                   "300" = sCorrect(ls.lvmfit[["300"]], adjust.n = FALSE),
-                                   "500" = sCorrect(ls.lvmfit[["500"]], adjust.n = FALSE),
-                                   times = 50
-                                   )
-
- ##    Unit: milliseconds
- ## expr      min       lq     mean   median       uq      max neval cld
- ##   20 137.4206 139.4769 151.5129 151.5326 159.3462 179.8258    50 cd
- ##   30 124.6302 125.9618 136.9098 138.2271 144.7811 164.9541    50 ab
- ##   50 120.9232 122.0929 131.6263 132.6343 135.1917 166.9360    50 a
- ##   75 126.1521 127.8582 139.4041 140.5283 146.9436 166.2210    50 ab
- ##  100 131.2951 141.6610 145.3657 145.1715 153.7632 157.3701    50 bd
- ##  150 131.5896 132.9748 142.7944 145.3925 146.9813 159.4823    50 bc
- ##  200 141.1600 151.5561 154.4614 154.8508 157.2333 171.8212    50 d
- ##  300 159.7682 170.4607 179.4216 175.0345 183.6101 356.9537    50 e
- ##  500 207.7388 221.7226 229.4150 223.6882 229.9727 410.6021    50 f
-
+    ##    Unit: milliseconds
+    ## expr      min       lq     mean   median       uq      max neval cld
+    ##   20 153.4920 165.4882 167.9470 168.0757 173.8985 181.4775    50 b
+    ##   30 139.3625 143.3120 153.0009 154.8625 156.3171 176.4130    50 a
+    ##   50 140.7812 143.2224 155.0999 155.5626 157.3227 193.3208    50 a
+    ##   75 154.9952 170.4748 174.3150 174.5028 180.2789 210.7192    50 b
+    ##  100 170.1527 183.2981 192.2278 186.0499 195.3349 389.3620    50 c
+    ##  150 175.7185 189.7478 195.4327 194.0275 202.5155 223.1499    50 c
+    ##  200 202.3027 215.0806 220.8639 220.7766 225.8146 252.8478    50 d
+    ##  300 262.3011 266.8939 272.6470 271.2441 275.5871 292.8013    50 e
+    ##  500 360.1440 371.8377 384.6029 380.2178 390.5027 556.9517    50 f
 
 }

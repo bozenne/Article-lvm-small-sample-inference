@@ -129,19 +129,34 @@ if(FALSE){
     names(ls.data) <- seqN
     ls.lvmfit <- lapply(ls.data, function(iData){lava::estimate(m.fit, data = iData)})
     names(ls.lvmfit) <- seqN
-    
-    speedLvm <- microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]]),
-                                               "30" = sCorrect(ls.lvmfit[["30"]]),
-                                               "50" = sCorrect(ls.lvmfit[["50"]]),
-                                               "75" = sCorrect(ls.lvmfit[["75"]]),
-                                               "100" = sCorrect(ls.lvmfit[["100"]]),
-                                               "150" = sCorrect(ls.lvmfit[["150"]]),
-                                               "200" = sCorrect(ls.lvmfit[["200"]]),
-                                               "300" = sCorrect(ls.lvmfit[["300"]]),
-                                               "500" = sCorrect(ls.lvmfit[["500"]]),
-                                               times = 50
-                                               )
 
+    ## algo 2
+    if(packageVersion("lavaSearch2")>="2.0.0"){
+        speedLvm <- microbenchmark::microbenchmark("20" = estimate2(ls.lvmfit[["20"]]),
+                                                      "30" = estimate2(ls.lvmfit[["30"]]),
+                                                      "50" = estimate2(ls.lvmfit[["50"]]),
+                                                      "75" = estimate2(ls.lvmfit[["75"]]),
+                                                      "100" = estimate2(ls.lvmfit[["100"]]),
+                                                      "150" = estimate2(ls.lvmfit[["150"]]),
+                                                      "200" = estimate2(ls.lvmfit[["200"]]),
+                                                      "300" = estimate2(ls.lvmfit[["300"]]),
+                                                      "500" = estimate2(ls.lvmfit[["500"]]),
+                                                      times = 50
+                                                      )
+    }else{
+        speedLvm <- microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]]),
+                                                   "30" = sCorrect(ls.lvmfit[["30"]]),
+                                                   "50" = sCorrect(ls.lvmfit[["50"]]),
+                                                   "75" = sCorrect(ls.lvmfit[["75"]]),
+                                                   "100" = sCorrect(ls.lvmfit[["100"]]),
+                                                   "150" = sCorrect(ls.lvmfit[["150"]]),
+                                                   "200" = sCorrect(ls.lvmfit[["200"]]),
+                                                   "300" = sCorrect(ls.lvmfit[["300"]]),
+                                                   "500" = sCorrect(ls.lvmfit[["500"]]),
+                                                   times = 50
+                                                   )
+    }
+    
     saveRDS(speedLvm, file = file.path("Results","speed-Algo2-Lvm.rds"))
     ## Unit: seconds
     ## expr      min       lq     mean   median       uq      max neval     cld
@@ -154,30 +169,4 @@ if(FALSE){
     ##  200 2.121476 2.161624 2.354556 2.183057 2.346099 3.517504    50     e
     ##  300 2.641857 2.689073 2.964438 2.733649 3.096009 4.339638    50      f
     ##  500 3.724511 3.814207 4.264608 3.952911 4.711809 6.242196    50       g
-
-
-    microbenchmark::microbenchmark("20" = sCorrect(ls.lvmfit[["20"]], adjust.n = FALSE),
-                                   "30" = sCorrect(ls.lvmfit[["30"]], adjust.n = FALSE),
-                                   "50" = sCorrect(ls.lvmfit[["50"]], adjust.n = FALSE),
-                                   "75" = sCorrect(ls.lvmfit[["75"]], adjust.n = FALSE),
-                                   "100" = sCorrect(ls.lvmfit[["100"]], adjust.n = FALSE),
-                                   "150" = sCorrect(ls.lvmfit[["150"]], adjust.n = FALSE),
-                                   "200" = sCorrect(ls.lvmfit[["200"]], adjust.n = FALSE),
-                                   "300" = sCorrect(ls.lvmfit[["300"]], adjust.n = FALSE),
-                                   "500" = sCorrect(ls.lvmfit[["500"]], adjust.n = FALSE),
-                                   times = 50
-                                   )
-
- ##  Unit: seconds
- ## expr      min       lq     mean   median       uq      max neval       cld
- ##   20 1.169460 1.306945 1.317370 1.314885 1.321555 1.483733    50 a
- ##   30 1.312330 1.363856 1.382549 1.374494 1.386164 1.587925    50  b
- ##   50 1.381207 1.403971 1.440235 1.417169 1.431471 1.624161    50   c
- ##   75 1.437357 1.466655 1.497497 1.475011 1.490091 1.852044    50    d
- ##  100 1.531073 1.580242 1.600057 1.587612 1.599386 1.776423    50     e
- ##  150 1.438763 1.728570 1.746438 1.746742 1.764324 1.922078    50      f
- ##  200 1.772964 1.963915 2.002379 1.982535 2.007029 2.211650    50       g
- ##  300 2.081014 2.422400 2.460114 2.448112 2.496902 2.625499    50        h
- ##  500 3.248974 3.285032 3.350777 3.313122 3.411010 3.605012    50         i
-
 }
